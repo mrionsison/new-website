@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>thinkpro | Professional Social Network</title>
+    <title>thinkpro | SQL & Server Architecture</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -74,10 +74,10 @@
     <div id="screen-auth" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 transition-all duration-500">
         <div class="w-full max-w-sm text-center">
             <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl rotate-3">
-                <i class="fas fa-bolt-lightning text-white text-2xl"></i>
+                <i class="fas fa-server text-white text-2xl"></i>
             </div>
             <h1 class="text-3xl font-extrabold mb-2 tracking-tight">thinkpro.</h1>
-            <p id="auth-subtitle" class="text-slate-400 font-medium mb-10">Local-first professional network.</p>
+            <p id="auth-subtitle" class="text-slate-400 font-medium mb-10">SQL Engine & Mock Server Active.</p>
 
             <form id="form-auth" class="space-y-4 text-left">
                 <div id="field-name" class="hidden">
@@ -89,13 +89,13 @@
                     <input type="text" id="input-email" required class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-indigo-300 transition-all" placeholder="yourname">
                 </div>
                 <button type="submit" class="w-full btn-primary font-bold py-4 rounded-2xl mt-4 flex items-center justify-center space-x-2">
-                    <span id="btn-auth-text">Enter the Network</span>
-                    <i class="fas fa-arrow-right text-xs opacity-50"></i>
+                    <span id="btn-auth-text">Initialize Connection</span>
+                    <i class="fas fa-database text-xs opacity-50"></i>
                 </button>
             </form>
 
             <button id="btn-toggle-auth" class="mt-8 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors">
-                New user? Create a profile
+                New user? Register on Server
             </button>
         </div>
     </div>
@@ -103,7 +103,7 @@
     <!-- App Shell -->
     <div id="app-shell" class="hidden min-h-screen pb-20 lg:pb-0 lg:pl-72">
         
-        <!-- Sidebar (Desktop) -->
+        <!-- Sidebar -->
         <aside class="fixed left-0 top-0 h-full w-72 bg-white border-r border-slate-100 p-8 hidden lg:flex flex-col z-50">
             <h2 class="text-2xl font-black text-indigo-600 mb-12 tracking-tighter">thinkpro.</h2>
             <nav class="flex-1 space-y-2">
@@ -117,8 +117,14 @@
                     <i class="fas fa-user"></i><span>My Profile</span>
                 </button>
             </nav>
+            
+            <div class="mt-auto p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Server Logs</p>
+                <div id="server-status" class="text-[10px] text-green-500 font-mono">200 OK: DB Connected</div>
+            </div>
+
             <button onclick="app.logout()" class="p-4 text-slate-400 hover:text-red-500 font-bold flex items-center space-x-4 transition-colors">
-                <i class="fas fa-sign-out-alt"></i><span>Log Out</span>
+                <i class="fas fa-sign-out-alt"></i><span>Terminate Session</span>
             </button>
         </aside>
 
@@ -126,9 +132,9 @@
         <header class="sticky top-0 z-40 glass px-6 py-4 flex items-center justify-between">
             <h1 id="view-title" class="text-xl font-extrabold tracking-tight capitalize">Home Feed</h1>
             <div class="flex items-center space-x-3">
-                <div class="hidden sm:flex items-center space-x-2 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
-                    <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></div>
-                    <span class="text-[10px] font-black text-indigo-600 uppercase">Local Storage</span>
+                <div class="hidden sm:flex items-center space-x-2 bg-slate-900 px-3 py-1.5 rounded-full">
+                    <i class="fas fa-microchip text-indigo-400 text-[10px]"></i>
+                    <span id="latency-indicator" class="text-[10px] font-black text-white uppercase tracking-tighter">0ms</span>
                 </div>
                 <img id="user-avatar-small" class="w-9 h-9 rounded-xl object-cover bg-slate-100 border border-slate-100">
             </div>
@@ -136,8 +142,7 @@
 
         <!-- Main Container -->
         <main id="view-container" class="max-w-2xl mx-auto p-4 md:p-8">
-            
-            <!-- Feed -->
+            <!-- Screens same as previous version but logic will differ -->
             <div id="screen-feed" class="anim-slide-up space-y-6">
                 <div class="card p-5 rounded-[2rem] shadow-sm">
                     <div class="flex space-x-4">
@@ -155,7 +160,7 @@
                                         <input type="file" id="post-image-input" class="hidden" accept="image/*">
                                     </label>
                                 </div>
-                                <button onclick="feedManager.createPost()" class="btn-primary px-8 py-2.5 rounded-xl font-bold text-sm">Share Post</button>
+                                <button onclick="feedManager.createPost()" class="btn-primary px-8 py-2.5 rounded-xl font-bold text-sm">Post to Server</button>
                             </div>
                         </div>
                     </div>
@@ -163,7 +168,6 @@
                 <div id="feed-list" class="space-y-6"></div>
             </div>
 
-            <!-- Profile -->
             <div id="screen-profile" class="hidden anim-slide-up">
                 <div class="card rounded-[2.5rem] overflow-hidden">
                     <div class="h-32 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
@@ -177,11 +181,11 @@
                                 <p class="text-[10px] font-black text-slate-300 uppercase">Posts</p>
                             </div>
                             <div class="text-center">
-                                <p class="font-black text-xl text-slate-800">124</p>
-                                <p class="text-[10px] font-black text-slate-300 uppercase">Readers</p>
+                                <p class="font-black text-xl text-slate-800">0</p>
+                                <p class="text-[10px] font-black text-slate-300 uppercase">Followers</p>
                             </div>
                             <div class="text-center">
-                                <p class="font-black text-xl text-slate-800">88</p>
+                                <p class="font-black text-xl text-slate-800">0</p>
                                 <p class="text-[10px] font-black text-slate-300 uppercase">Following</p>
                             </div>
                         </div>
@@ -189,11 +193,10 @@
                 </div>
             </div>
 
-            <!-- Discover -->
             <div id="screen-discover" class="hidden anim-slide-up space-y-4">
                 <div class="relative">
                     <i class="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                    <input type="text" id="search-input" placeholder="Search thinkers..." class="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm outline-none focus:border-indigo-300 transition-all">
+                    <input type="text" id="search-input" placeholder="Querying user database..." class="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm outline-none focus:border-indigo-300 transition-all">
                 </div>
                 <div id="user-results" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
@@ -207,7 +210,7 @@
         </nav>
     </div>
 
-    <!-- Notification -->
+    <!-- Toast Notification -->
     <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[200] opacity-0 pointer-events-none transition-all duration-300">
         <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center space-x-3">
             <span id="toast-msg" class="text-sm font-bold"></span>
@@ -215,21 +218,102 @@
     </div>
 
     <script>
-        // Store
-        const DB = {
-            get: (key) => JSON.parse(localStorage.getItem(key)) || [],
-            save: (key, data) => localStorage.setItem(key, JSON.stringify(data))
+        /**
+         * VIRTUAL SQL DATABASE ENGINE
+         * Mimics relational table structures and persistence
+         */
+        const SQL_DB = {
+            tables: {
+                users: 'tp_users',
+                posts: 'tp_posts',
+                sessions: 'tp_sessions'
+            },
+            init: function() {
+                if (!localStorage.getItem(this.tables.users)) localStorage.setItem(this.tables.users, '[]');
+                if (!localStorage.getItem(this.tables.posts)) localStorage.setItem(this.tables.posts, '[]');
+            },
+            query: function(table, predicate = () => true) {
+                const data = JSON.parse(localStorage.getItem(this.tables[table]) || '[]');
+                return data.filter(predicate);
+            },
+            insert: function(table, record) {
+                const data = JSON.parse(localStorage.getItem(this.tables[table]) || '[]');
+                const newRecord = { ...record, id: Date.now() + Math.random() };
+                data.unshift(newRecord);
+                localStorage.setItem(this.tables[table], JSON.stringify(data));
+                return newRecord;
+            }
         };
 
+        /**
+         * MOCK SERVER LAYER
+         * Provides an "API" interface with simulated latency and response codes
+         */
+        const MockServer = {
+            latency: () => Math.floor(Math.random() * 150) + 50,
+            log: (msg) => {
+                const logEl = document.getElementById('server-status');
+                if(logEl) logEl.innerText = msg;
+            },
+            request: async function(endpoint, method, payload) {
+                const start = performance.now();
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        const end = performance.now();
+                        document.getElementById('latency-indicator').innerText = `${Math.round(end - start)}ms`;
+                        
+                        try {
+                            const result = this.endpoints[endpoint](method, payload);
+                            this.log(`200 OK: ${endpoint}`);
+                            resolve(result);
+                        } catch (e) {
+                            this.log(`500 ERR: ${e.message}`);
+                            reject(e);
+                        }
+                    }, this.latency());
+                });
+            },
+            endpoints: {
+                '/auth/login': (method, { handle }) => {
+                    const users = SQL_DB.query('users', u => u.handle === handle);
+                    if (users.length === 0) throw new Error("User not found");
+                    return users[0];
+                },
+                '/auth/register': (method, { handle, name }) => {
+                    const exists = SQL_DB.query('users', u => u.handle === handle);
+                    if (exists.length > 0) throw new Error("Handle taken");
+                    const user = { 
+                        handle, name, 
+                        avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${handle}` 
+                    };
+                    return SQL_DB.insert('users', user);
+                },
+                '/posts': (method, payload) => {
+                    if (method === 'GET') return SQL_DB.query('posts');
+                    if (method === 'POST') return SQL_DB.insert('posts', payload);
+                },
+                '/users/search': (method, { q }) => {
+                    return SQL_DB.query('users', u => 
+                        u.name.toLowerCase().includes(q.toLowerCase()) || 
+                        u.handle.toLowerCase().includes(q.toLowerCase())
+                    );
+                },
+                '/users/stats': (method, { handle }) => {
+                    const posts = SQL_DB.query('posts', p => p.authorHandle === handle);
+                    return { postCount: posts.length };
+                }
+            }
+        };
+
+        /**
+         * FRONTEND APPLICATION LOGIC
+         */
         const state = {
-            user: JSON.parse(localStorage.getItem('thinkpro_session')),
+            currentUser: JSON.parse(localStorage.getItem('tp_session')),
             isSignup: false,
-            currentPostImage: null,
-            posts: DB.get('thinkpro_posts'),
-            users: DB.get('thinkpro_users')
+            currentPostImage: null
         };
 
-        // UI Utils
         const notify = (msg) => {
             const t = document.getElementById('toast');
             document.getElementById('toast-msg').innerText = msg;
@@ -239,7 +323,7 @@
         };
 
         const router = {
-            navigate: (view) => {
+            navigate: async (view) => {
                 document.getElementById('view-title').innerText = view === 'feed' ? 'Home Feed' : view;
                 ['feed', 'profile', 'discover'].forEach(v => {
                     document.getElementById(`screen-${v}`).classList.toggle('hidden', v !== view);
@@ -248,13 +332,16 @@
                     if(m) { m.classList.toggle('nav-active', v === view); m.classList.toggle('text-slate-400', v !== view); }
                     if(d) { d.classList.toggle('nav-active', v === view); d.classList.toggle('text-indigo-600', v === view); }
                 });
-                if(view === 'profile') app.updateProfileView();
+
+                if(view === 'feed') feedManager.render();
+                if(view === 'profile') app.loadProfile();
             }
         };
 
         const app = {
             init: () => {
-                if(state.user) {
+                SQL_DB.init();
+                if(state.currentUser) {
                     document.getElementById('screen-auth').style.display = 'none';
                     document.getElementById('app-shell').classList.remove('hidden');
                     app.updateUI();
@@ -262,110 +349,103 @@
                 }
             },
             updateUI: () => {
-                const u = state.user;
+                const u = state.currentUser;
                 document.getElementById('user-avatar-small').src = u.avatar;
                 document.getElementById('composer-avatar').src = u.avatar;
                 document.getElementById('profile-img').src = u.avatar;
                 document.getElementById('profile-name').innerText = u.name;
                 document.getElementById('profile-handle').innerText = `@${u.handle}`;
             },
-            updateProfileView: () => {
-                const myPosts = state.posts.filter(p => p.authorHandle === state.user.handle);
-                document.getElementById('stat-posts').innerText = myPosts.length;
+            loadProfile: async () => {
+                const stats = await MockServer.request('/users/stats', 'GET', { handle: state.currentUser.handle });
+                document.getElementById('stat-posts').innerText = stats.postCount;
             },
             logout: () => {
-                localStorage.removeItem('thinkpro_session');
+                localStorage.removeItem('tp_session');
                 location.reload();
             }
         };
 
         const feedManager = {
-            createPost: () => {
+            createPost: async () => {
                 const input = document.getElementById('post-input');
                 const text = input.value.trim();
                 if(!text && !state.currentPostImage) return;
 
-                const post = {
-                    id: Date.now(),
+                const payload = {
                     text,
                     image: state.currentPostImage,
-                    author: state.user.name,
-                    authorHandle: state.user.handle,
-                    avatar: state.user.avatar,
+                    author: state.currentUser.name,
+                    authorHandle: state.currentUser.handle,
+                    avatar: state.currentUser.avatar,
                     createdAt: Date.now(),
                     likes: 0
                 };
 
-                state.posts.unshift(post);
-                DB.save('thinkpro_posts', state.posts);
+                await MockServer.request('/posts', 'POST', payload);
                 input.value = '';
                 feedManager.clearImage();
                 feedManager.render();
-                notify("Post shared locally!");
+                notify("Post committed to SQL DB");
             },
             clearImage: () => {
                 state.currentPostImage = null;
                 document.getElementById('image-preview-container').classList.add('hidden');
                 document.getElementById('post-image-input').value = '';
             },
-            render: () => {
+            render: async () => {
+                const posts = await MockServer.request('/posts', 'GET');
                 const container = document.getElementById('feed-list');
-                if(state.posts.length === 0) {
-                    container.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold italic">Silence... be the first to break it.</div>`;
+                
+                if(posts.length === 0) {
+                    container.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold italic">No records in tp_posts table.</div>`;
                     return;
                 }
-                container.innerHTML = state.posts.map(p => `
+
+                container.innerHTML = posts.map(p => `
                     <div class="card p-6 rounded-[2.5rem] anim-slide-up flex flex-col space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <img src="${p.avatar}" class="w-10 h-10 rounded-xl object-cover">
-                                <div>
-                                    <h4 class="font-bold text-sm text-slate-900">${p.author}</h4>
-                                    <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">@${p.authorHandle}</p>
-                                </div>
+                        <div class="flex items-center space-x-3">
+                            <img src="${p.avatar}" class="w-10 h-10 rounded-xl object-cover">
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-900">${p.author}</h4>
+                                <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">@${p.authorHandle}</p>
                             </div>
                         </div>
                         <p class="text-slate-600 leading-relaxed font-medium">${p.text}</p>
                         ${p.image ? `<img src="${p.image}" class="w-full rounded-2xl border border-slate-50 max-h-96 object-cover">` : ''}
                         <div class="flex items-center space-x-6 pt-4 border-t border-slate-50">
                             <button class="flex items-center space-x-2 text-slate-400"><i class="far fa-heart"></i><span class="text-xs font-bold">${p.likes}</span></button>
-                            <button class="flex items-center space-x-2 text-slate-400"><i class="far fa-comment"></i><span class="text-xs font-bold">Reply</span></button>
+                            <button class="flex items-center space-x-2 text-slate-400"><i class="fas fa-code"></i><span class="text-[8px] font-mono">ID: ${p.id.toString().slice(-4)}</span></button>
                         </div>
                     </div>
                 `).join('');
             }
         };
 
-        // Listeners
-        document.getElementById('form-auth').onsubmit = (e) => {
+        // UI Handlers
+        document.getElementById('form-auth').onsubmit = async (e) => {
             e.preventDefault();
             const handle = document.getElementById('input-email').value.trim().toLowerCase();
             const name = document.getElementById('input-name').value.trim();
 
-            if(state.isSignup) {
-                const user = {
-                    handle, name,
-                    avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${handle}`,
-                    createdAt: Date.now()
-                };
-                state.users.push(user);
-                DB.save('thinkpro_users', state.users);
-                state.user = user;
-            } else {
-                const user = state.users.find(u => u.handle === handle);
-                if(!user) return notify("Profile not found locally.");
-                state.user = user;
+            try {
+                const endpoint = state.isSignup ? '/auth/register' : '/auth/login';
+                const user = await MockServer.request(endpoint, 'POST', { handle, name });
+                
+                state.currentUser = user;
+                localStorage.setItem('tp_session', JSON.stringify(user));
+                app.init();
+                notify(`Logged in as ${user.name}`);
+            } catch (err) {
+                notify(err.message);
             }
-
-            localStorage.setItem('thinkpro_session', JSON.stringify(state.user));
-            app.init();
         };
 
         document.getElementById('btn-toggle-auth').onclick = () => {
             state.isSignup = !state.isSignup;
             document.getElementById('field-name').classList.toggle('hidden', !state.isSignup);
-            document.getElementById('btn-auth-text').innerText = state.isSignup ? 'Create Profile' : 'Enter the Network';
-            document.getElementById('btn-toggle-auth').innerText = state.isSignup ? 'Already a user? Log In' : 'New user? Create a profile';
+            document.getElementById('btn-auth-text').innerText = state.isSignup ? 'Register on Server' : 'Initialize Connection';
+            document.getElementById('btn-toggle-auth').innerText = state.isSignup ? 'Existing Profile? Login' : 'New user? Register on Server';
         };
 
         document.getElementById('post-image-input').onchange = (e) => {
@@ -378,10 +458,11 @@
             reader.readAsDataURL(e.target.files[0]);
         };
 
-        document.getElementById('search-input').oninput = (e) => {
-            const val = e.target.value.toLowerCase();
-            const filtered = state.users.filter(u => u.name.toLowerCase().includes(val) || u.handle.toLowerCase().includes(val));
-            document.getElementById('user-results').innerHTML = filtered.map(u => `
+        document.getElementById('search-input').oninput = async (e) => {
+            const q = e.target.value;
+            if (q.length < 1) return;
+            const results = await MockServer.request('/users/search', 'GET', { q });
+            document.getElementById('user-results').innerHTML = results.map(u => `
                 <div class="card p-4 rounded-3xl flex items-center space-x-3">
                     <img src="${u.avatar}" class="w-10 h-10 rounded-xl">
                     <div>
