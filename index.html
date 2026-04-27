@@ -2,473 +2,681 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>thinkpro | Cloud Architecture</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>thinkpro | connect truly</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        :root { 
-            --accent: #6366f1; 
-            --accent-soft: rgba(99, 102, 241, 0.1);
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
         }
 
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #fcfcfd; 
-            color: #0f172a;
-            overscroll-behavior: none;
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        .glass { 
-            background: rgba(255, 255, 255, 0.9); 
-            backdrop-filter: blur(12px); 
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .card { 
-            background: white; 
-            border: 1px solid rgba(0,0,0,0.06); 
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.23);
-            filter: brightness(1.1);
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .anim-slide-up { animation: slideUp 0.4s ease-out forwards; }
-
-        .nav-active { color: var(--accent); position: relative; }
-        .nav-active::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
+        .custom-scrollbar::-webkit-scrollbar {
             width: 4px;
-            height: 4px;
-            background: var(--accent);
-            border-radius: 50%;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .hidden-el { display: none !important; }
         
-        .loading-shimmer {
-            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
+        .active-nav {
+            color: #2563eb;
+            background: #eff6ff;
+            border-right: 3px solid #2563eb;
         }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="antialiased">
+<body class="text-slate-900">
 
-    <!-- Auth Screen -->
-    <div id="screen-auth" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 transition-all duration-500">
-        <div class="w-full max-w-sm text-center">
-            <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl rotate-3">
-                <i class="fas fa-cloud text-white text-2xl"></i>
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-60 backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md mx-4">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-black tracking-tight text-blue-600">thinkpro</h1>
+                <p class="text-slate-500 mt-2 font-medium">Real people. Real posts.</p>
             </div>
-            <h1 class="text-3xl font-extrabold mb-2 tracking-tight">thinkpro.</h1>
-            <p id="auth-subtitle" class="text-slate-400 font-medium mb-10">Cloud Database Synchronized.</p>
-
-            <form id="form-auth" class="space-y-4 text-left">
-                <div id="field-name" class="hidden">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                    <input type="text" id="input-name" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-indigo-300 transition-all" placeholder="Enter your name">
+            
+            <div id="login-form">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700">Username</label>
+                        <input type="text" id="login-username" class="mt-1 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="Enter username">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700">Password</label>
+                        <input type="password" id="login-password" class="mt-1 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="••••••••">
+                    </div>
+                    <button onclick="app.handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-200">Sign In</button>
                 </div>
-                <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-                    <input type="email" id="input-email" required class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-indigo-300 transition-all" placeholder="name@domain.com">
-                </div>
-                <button type="submit" id="btn-auth-submit" class="w-full btn-primary font-bold py-4 rounded-2xl mt-4 flex items-center justify-center space-x-2">
-                    <span id="btn-auth-text">Sync with Cloud</span>
-                    <i class="fas fa-sync text-xs opacity-50"></i>
-                </button>
-            </form>
+                <p class="text-center mt-8 text-sm text-slate-500">
+                    New to thinkpro? <a href="#" onclick="app.toggleAuthMode()" class="text-blue-600 font-bold">Create an account</a>
+                </p>
+            </div>
 
-            <button id="btn-toggle-auth" class="mt-8 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors">
-                New user? Create Cloud Account
-            </button>
+            <div id="signup-form" class="hidden-el">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700">Full Name</label>
+                        <input type="text" id="signup-name" class="mt-1 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700">Username</label>
+                        <input type="text" id="signup-username" class="mt-1 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="johndoe">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700">Password</label>
+                        <input type="password" id="signup-password" class="mt-1 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••">
+                    </div>
+                    <button onclick="app.handleSignup()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-200">Create Account</button>
+                </div>
+                <p class="text-center mt-8 text-sm text-slate-500">
+                    Already registered? <a href="#" onclick="app.toggleAuthMode()" class="text-blue-600 font-bold">Log in</a>
+                </p>
+            </div>
         </div>
     </div>
 
-    <!-- App Shell -->
-    <div id="app-shell" class="hidden min-h-screen pb-20 lg:pb-0 lg:pl-72">
+    <!-- Main App Container -->
+    <div id="main-app" class="hidden-el min-h-screen flex flex-col md:flex-row max-w-7xl mx-auto">
         
-        <!-- Sidebar -->
-        <aside class="fixed left-0 top-0 h-full w-72 bg-white border-r border-slate-100 p-8 hidden lg:flex flex-col z-50">
-            <h2 class="text-2xl font-black text-indigo-600 mb-12 tracking-tighter">thinkpro.</h2>
-            <nav class="flex-1 space-y-2">
-                <button onclick="router.navigate('feed')" id="nav-d-feed" class="w-full flex items-center space-x-4 p-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
-                    <i class="fas fa-house"></i><span>Home Feed</span>
-                </button>
-                <button onclick="router.navigate('discover')" id="nav-d-discover" class="w-full flex items-center space-x-4 p-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
-                    <i class="fas fa-search"></i><span>Discover</span>
-                </button>
-                <button onclick="router.navigate('profile')" id="nav-d-profile" class="w-full flex items-center space-x-4 p-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
-                    <i class="fas fa-user"></i><span>My Profile</span>
-                </button>
-            </nav>
-            
-            <div class="mt-auto p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Database Status</p>
-                <div id="server-status" class="text-[10px] text-green-500 font-mono">Cloud Sync: Active</div>
+        <!-- Left Sidebar -->
+        <aside class="w-full md:w-64 glass-morphism sticky top-0 h-screen hidden md:flex flex-col border-r border-slate-200">
+            <div class="p-8">
+                <h2 class="text-3xl font-black text-blue-600 tracking-tighter">thinkpro</h2>
             </div>
-
-            <button onclick="app.logout()" class="p-4 text-slate-400 hover:text-red-500 font-bold flex items-center space-x-4 transition-colors">
-                <i class="fas fa-sign-out-alt"></i><span>Sign Out</span>
-            </button>
+            <nav class="flex-1 px-4 space-y-2">
+                <a href="#" onclick="app.navigate('feed')" id="nav-feed" class="flex items-center space-x-4 p-4 rounded-2xl transition active-nav">
+                    <i class="fas fa-layer-group w-6 text-xl"></i>
+                    <span class="font-bold">Timeline</span>
+                </a>
+                <a href="#" onclick="app.navigate('discover')" id="nav-discover" class="flex items-center space-x-4 p-4 rounded-2xl transition text-slate-500 hover:bg-slate-50">
+                    <i class="fas fa-compass w-6 text-xl"></i>
+                    <span class="font-bold">Explore</span>
+                </a>
+                <a href="#" onclick="app.navigate('notifications')" id="nav-notifications" class="relative flex items-center space-x-4 p-4 rounded-2xl transition text-slate-500 hover:bg-slate-50">
+                    <i class="fas fa-heart w-6 text-xl"></i>
+                    <span class="font-bold">Activity</span>
+                    <span id="notif-badge" class="hidden-el absolute top-4 left-8 w-2.5 h-2.5 bg-blue-500 border-2 border-white rounded-full"></span>
+                </a>
+                <a href="#" onclick="app.navigate('profile')" id="nav-profile" class="flex items-center space-x-4 p-4 rounded-2xl transition text-slate-500 hover:bg-slate-50">
+                    <i class="fas fa-circle-user w-6 text-xl"></i>
+                    <span class="font-bold">Profile</span>
+                </a>
+            </nav>
+            <div class="p-4 mt-auto border-t border-slate-100">
+                <button onclick="app.logout()" class="flex items-center space-x-4 p-4 w-full text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-colors">
+                    <i class="fas fa-power-off w-6"></i>
+                    <span class="font-bold">Sign Out</span>
+                </button>
+            </div>
         </aside>
 
-        <!-- Dynamic Header -->
-        <header class="sticky top-0 z-40 glass px-6 py-4 flex items-center justify-between">
-            <h1 id="view-title" class="text-xl font-extrabold tracking-tight capitalize">Home Feed</h1>
-            <div class="flex items-center space-x-3">
-                <div class="hidden sm:flex items-center space-x-2 bg-slate-900 px-3 py-1.5 rounded-full">
-                    <i class="fas fa-globe text-indigo-400 text-[10px]"></i>
-                    <span id="latency-indicator" class="text-[10px] font-black text-white uppercase tracking-tighter">Live</span>
-                </div>
-                <img id="user-avatar-small" class="w-9 h-9 rounded-xl object-cover bg-slate-100 border border-slate-100">
+        <!-- Main Content Area -->
+        <main class="flex-1 min-w-0 bg-white md:bg-slate-50/50 border-r border-slate-200 overflow-y-auto custom-scrollbar h-screen">
+            <!-- Mobile Header -->
+            <div class="md:hidden flex justify-between items-center p-4 bg-white/80 backdrop-blur-md border-b sticky top-0 z-20">
+                <h1 class="text-2xl font-black text-blue-600 tracking-tighter">thinkpro</h1>
+                <button onclick="app.navigate('profile')">
+                    <img id="mobile-avatar" src="" class="w-10 h-10 rounded-full border-2 border-slate-100 shadow-sm">
+                </button>
             </div>
-        </header>
 
-        <!-- Main Container -->
-        <main id="view-container" class="max-w-2xl mx-auto p-4 md:p-8">
-            <div id="screen-feed" class="anim-slide-up space-y-6">
-                <div class="card p-5 rounded-[2rem] shadow-sm">
+            <div id="screen-feed" class="max-w-2xl mx-auto p-4 space-y-6">
+                <!-- Create Post -->
+                <div class="bg-white rounded-3xl shadow-sm p-6 border border-slate-200">
                     <div class="flex space-x-4">
-                        <img id="composer-avatar" class="w-12 h-12 rounded-2xl object-cover bg-slate-50">
+                        <img id="current-user-avatar" src="" class="w-12 h-12 rounded-full border bg-slate-50">
                         <div class="flex-1">
-                            <textarea id="post-input" class="w-full border-none resize-none py-2 text-lg font-medium bg-transparent outline-none no-scrollbar" placeholder="Sync your thoughts..." rows="1"></textarea>
-                            <div id="image-preview-container" class="hidden mt-3 relative inline-block">
-                                <img id="post-image-preview" class="max-h-48 rounded-2xl border border-slate-100">
-                                <button onclick="feedManager.clearImage()" class="absolute -top-2 -right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs"><i class="fas fa-times"></i></button>
+                            <textarea id="post-content" rows="3" class="w-full border-none focus:ring-0 text-lg resize-none placeholder-slate-400" placeholder="Share your thoughts..."></textarea>
+                            <div id="image-preview-container" class="hidden-el mt-4 relative">
+                                <img id="image-preview" src="" class="rounded-2xl w-full h-64 object-cover">
+                                <button onclick="app.clearImage()" class="absolute top-3 right-3 bg-white/90 text-slate-900 p-2 rounded-full shadow-lg hover:bg-white transition"><i class="fas fa-times"></i></button>
                             </div>
-                            <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-50">
-                                <div class="flex space-x-4 text-slate-400">
-                                    <label class="cursor-pointer hover:text-indigo-600 transition-colors">
-                                        <i class="far fa-image"></i>
-                                        <input type="file" id="post-image-input" class="hidden" accept="image/*">
-                                    </label>
+                            <div class="flex items-center justify-between pt-4 border-t border-slate-100 mt-2">
+                                <div class="flex space-x-2">
+                                    <button onclick="document.getElementById('post-image-input').click()" class="text-slate-500 hover:bg-slate-100 p-2.5 rounded-xl transition">
+                                        <i class="fas fa-image text-xl"></i>
+                                    </button>
+                                    <input type="file" id="post-image-input" class="hidden" accept="image/*" onchange="app.handleImageSelect(event)">
+                                    <button class="text-slate-500 hover:bg-slate-100 p-2.5 rounded-xl transition"><i class="fas fa-at text-xl"></i></button>
                                 </div>
-                                <button onclick="feedManager.createPost()" id="btn-post" class="btn-primary px-8 py-2.5 rounded-xl font-bold text-sm">Post to Cloud</button>
+                                <button onclick="app.createPost()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 active:scale-95 transition-all shadow-md">Post</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id="feed-list" class="space-y-6"></div>
-            </div>
 
-            <div id="screen-profile" class="hidden anim-slide-up">
-                <div class="card rounded-[2.5rem] overflow-hidden">
-                    <div class="h-32 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
-                    <div class="px-8 pb-10 flex flex-col items-center -mt-12">
-                        <img id="profile-img" class="w-28 h-28 rounded-[2.2rem] border-8 border-white shadow-xl bg-white object-cover">
-                        <h2 id="profile-name" class="text-2xl font-black mt-4 text-slate-900"></h2>
-                        <p id="profile-handle" class="text-indigo-600 font-bold text-sm mb-6"></p>
-                        <div class="grid grid-cols-3 gap-8 w-full border-t border-slate-50 pt-8 mt-2">
-                            <div class="text-center">
-                                <p id="stat-posts" class="font-black text-xl text-slate-800">0</p>
-                                <p class="text-[10px] font-black text-slate-300 uppercase">Posts</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="font-black text-xl text-slate-800">Global</p>
-                                <p class="text-[10px] font-black text-slate-300 uppercase">Reach</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="font-black text-xl text-slate-800" id="user-id-display">...</p>
-                                <p class="text-[10px] font-black text-slate-300 uppercase">User ID</p>
-                            </div>
-                        </div>
-                    </div>
+                <div id="posts-container" class="space-y-6 pb-24 md:pb-8">
+                    <!-- Posts -->
                 </div>
             </div>
 
-            <div id="screen-discover" class="hidden anim-slide-up space-y-4">
+            <!-- Other Screens -->
+            <div id="screen-profile" class="hidden-el animate-fade-in pb-24">
+                <div class="h-48 bg-slate-200"></div>
+                <div class="px-6 -mt-16">
+                    <div class="flex justify-between items-end">
+                        <img id="profile-page-avatar" src="" class="w-36 h-36 rounded-full border-4 border-white shadow-xl bg-white object-cover">
+                        <button onclick="app.editProfile()" class="mb-4 bg-white border border-slate-200 px-6 py-2 rounded-xl font-bold hover:bg-slate-50 transition shadow-sm">Edit Profile</button>
+                    </div>
+                    <div class="mt-6">
+                        <div class="flex items-center space-x-2">
+                            <h2 id="profile-page-name" class="text-3xl font-black tracking-tight"></h2>
+                            <span id="dev-badge-profile" class="hidden-el text-blue-600 bg-blue-50 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border border-blue-100">Dev</span>
+                        </div>
+                        <p id="profile-page-username" class="text-blue-600 font-semibold"></p>
+                        <p id="profile-page-bio" class="mt-4 text-slate-600 text-lg leading-relaxed"></p>
+                        <div class="flex space-x-8 mt-8 pb-6 border-b border-slate-100">
+                            <div class="text-center"><p class="text-2xl font-black" id="profile-post-count">0</p><p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Posts</p></div>
+                            <div class="text-center"><p class="text-2xl font-black">0</p><p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Followers</p></div>
+                            <div class="text-center"><p class="text-2xl font-black">0</p><p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Following</p></div>
+                        </div>
+                    </div>
+                    <div id="user-posts-container" class="mt-8 space-y-6"></div>
+                </div>
+            </div>
+
+            <div id="screen-notifications" class="hidden-el p-6 max-w-2xl mx-auto space-y-6">
+                <h2 class="text-3xl font-black tracking-tight">Activity</h2>
+                <div id="notifications-list" class="space-y-3"></div>
+            </div>
+
+            <div id="screen-discover" class="hidden-el p-6 max-w-2xl mx-auto space-y-8">
                 <div class="relative">
-                    <i class="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                    <input type="text" id="search-input" placeholder="Search global users..." class="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm outline-none focus:border-indigo-300 transition-all">
+                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" onkeyup="app.searchUsers(this.value)" placeholder="Find people on thinkpro..." class="w-full pl-14 pr-6 py-4 bg-white rounded-2xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm">
                 </div>
-                <div id="user-results" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div id="search-results" class="space-y-4">
+                    <p class="text-slate-400 text-center py-12">Search for a username or name</p>
+                </div>
             </div>
         </main>
 
-        <!-- Nav (Mobile) -->
-        <nav class="fixed bottom-0 left-0 right-0 glass px-6 py-4 flex justify-around items-center lg:hidden z-50">
-            <button onclick="router.navigate('feed')" id="nav-m-feed" class="p-3 text-slate-400"><i class="fas fa-house text-xl"></i></button>
-            <button onclick="router.navigate('discover')" id="nav-m-discover" class="p-3 text-slate-400"><i class="fas fa-search text-xl"></i></button>
-            <button onclick="router.navigate('profile')" id="nav-m-profile" class="p-3 text-slate-400"><i class="fas fa-user text-xl"></i></button>
+        <!-- Right Discover Sidebar -->
+        <aside class="hidden lg:block w-80 p-8 space-y-8 sticky top-0 h-screen overflow-y-auto custom-scrollbar">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+                <h3 class="font-black text-xl mb-6">New Arrivals</h3>
+                <div id="suggestions-container" class="space-y-6">
+                    <p class="text-slate-400 text-sm">Join and find people to follow.</p>
+                </div>
+            </div>
+            <div class="bg-blue-600 rounded-3xl p-6 shadow-xl shadow-blue-100 text-white">
+                <h3 class="font-black text-xl mb-2">Join the conversation</h3>
+                <p class="text-blue-100 text-sm opacity-80 mb-4 font-medium">thinkpro is a space for authentic human connection.</p>
+                <button class="w-full bg-white text-blue-600 py-3 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg">Learn More</button>
+            </div>
+        </aside>
+
+        <!-- Mobile Nav -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-100 flex justify-around p-4 z-50">
+            <button onclick="app.navigate('feed')" class="text-blue-600"><i class="fas fa-layer-group text-2xl"></i></button>
+            <button onclick="app.navigate('discover')" class="text-slate-300"><i class="fas fa-compass text-2xl"></i></button>
+            <button onclick="app.navigate('notifications')" class="text-slate-300 relative">
+                <i class="fas fa-heart text-2xl"></i>
+                <span id="mobile-notif-badge" class="hidden-el absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 border-2 border-white rounded-full"></span>
+            </button>
+            <button onclick="app.navigate('profile')" class="text-slate-300"><i class="fas fa-circle-user text-2xl"></i></button>
         </nav>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[200] opacity-0 pointer-events-none transition-all duration-300">
-        <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center space-x-3">
-            <span id="toast-msg" class="text-sm font-bold"></span>
+    <!-- Modals -->
+    <div id="comment-modal" class="fixed inset-0 z-[60] hidden-el items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] shadow-2xl">
+            <div class="p-6 border-b border-slate-50 flex justify-between items-center">
+                <h3 class="font-black text-xl">Comments</h3>
+                <button onclick="app.closeCommentModal()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div id="comments-list" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar"></div>
+            <div class="p-6 border-t border-slate-50 bg-slate-50/50 flex space-x-3">
+                <input id="comment-input" type="text" placeholder="Add a comment..." class="flex-1 bg-white border border-slate-200 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition">
+                <button onclick="app.submitComment()" class="bg-blue-600 text-white font-black px-6 rounded-xl hover:bg-blue-700 transition">Post</button>
+            </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, addDoc, updateDoc, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-8 py-4 rounded-2xl shadow-2xl shadow-slate-300 transition-all duration-300 opacity-0 transform translate-y-10 z-[100] pointer-events-none font-bold">
+        <span id="toast-message"></span>
+    </div>
 
-        // Firebase Configuration
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseApp = initializeApp(firebaseConfig);
-        const auth = getAuth(firebaseApp);
-        const db = getFirestore(firebaseApp);
+    <script>
+        const app = (() => {
+            // Secret developer credentials
+            const DEV_ACCOUNT = {
+                id: 'admin-001',
+                name: 'Administrator',
+                username: 'admin1234',
+                password: '1234admin',
+                avatar: 'https://ui-avatars.com/api/?name=Admin&background=000&color=fff&bold=true',
+                bio: 'Official Developer Account for thinkpro. Systems & Security.',
+                isDev: true
+            };
 
-        // State Management
-        const state = {
-            user: null,
-            userData: null,
-            isSignup: false,
-            currentPostImage: null,
-            posts: []
-        };
-
-        // Utility Functions
-        const notify = (msg) => {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            t.style.opacity = '1';
-            t.style.transform = 'translate(-50%, 10px)';
-            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, 0)'; }, 3000);
-        };
-
-        // UI Handlers
-        window.app = {
-            logout: async () => {
-                await signOut(auth);
-                location.reload();
-            }
-        };
-
-        window.router = {
-            navigate: (view) => {
-                document.getElementById('view-title').innerText = view === 'feed' ? 'Home Feed' : view;
-                ['feed', 'profile', 'discover'].forEach(v => {
-                    document.getElementById(`screen-${v}`).classList.toggle('hidden', v !== view);
-                    const m = document.getElementById(`nav-m-${v}`);
-                    const d = document.getElementById(`nav-d-${v}`);
-                    if(m) { m.classList.toggle('nav-active', v === view); m.classList.toggle('text-slate-400', v !== view); }
-                    if(d) { d.classList.toggle('nav-active', v === view); d.classList.toggle('text-indigo-600', v === view); }
-                });
-            }
-        };
-
-        // Feed Logic
-        window.feedManager = {
-            createPost: async () => {
-                if (!state.user) return;
-                const input = document.getElementById('post-input');
-                const text = input.value.trim();
-                if (!text && !state.currentPostImage) return;
-
-                const btn = document.getElementById('btn-post');
-                btn.disabled = true;
-                btn.innerText = "Syncing...";
-
-                try {
-                    await addDoc(collection(db, 'artifacts', app_id, 'public', 'data', 'posts'), {
-                        text,
-                        image: state.currentPostImage,
-                        author: state.userData.name,
-                        authorId: state.user.uid,
-                        avatar: state.userData.avatar,
-                        createdAt: serverTimestamp(),
-                        likes: 0
-                    });
-                    input.value = '';
-                    window.feedManager.clearImage();
-                    notify("Persisted to Cloud Database");
-                } catch (e) {
-                    notify("Sync error. Try again.");
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = "Post to Cloud";
+            // Loaded Users Logic
+            const getInitialUsers = () => {
+                const stored = localStorage.getItem('tp_users');
+                if (!stored) return [DEV_ACCOUNT];
+                const parsed = JSON.parse(stored);
+                // Ensure dev account is always present
+                if (!parsed.find(u => u.username === DEV_ACCOUNT.username)) {
+                    parsed.push(DEV_ACCOUNT);
                 }
-            },
-            clearImage: () => {
-                state.currentPostImage = null;
-                document.getElementById('image-preview-container').classList.add('hidden');
-                document.getElementById('post-image-input').value = '';
-            },
-            render: (posts) => {
-                const container = document.getElementById('feed-list');
-                if (posts.length === 0) {
-                    container.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold italic">Global cloud feed is empty.</div>`;
-                    return;
-                }
+                return parsed;
+            };
 
-                container.innerHTML = posts.map(p => `
-                    <div class="card p-6 rounded-[2.5rem] anim-slide-up flex flex-col space-y-4">
-                        <div class="flex items-center space-x-3">
-                            <img src="${p.avatar}" class="w-10 h-10 rounded-xl object-cover bg-slate-50">
-                            <div>
-                                <h4 class="font-bold text-sm text-slate-900">${p.author}</h4>
-                                <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">${p.createdAt?.toDate().toLocaleTimeString() || 'Just now'}</p>
+            const state = {
+                currentUser: null,
+                users: getInitialUsers(),
+                posts: JSON.parse(localStorage.getItem('tp_posts')) || [],
+                notifications: JSON.parse(localStorage.getItem('tp_notifs')) || [],
+                currentScreen: 'feed',
+                activePostId: null,
+                currentImage: null
+            };
+
+            const sync = () => {
+                localStorage.setItem('tp_users', JSON.stringify(state.users));
+                localStorage.setItem('tp_posts', JSON.stringify(state.posts));
+                localStorage.setItem('tp_notifs', JSON.stringify(state.notifications));
+            };
+
+            const showToast = (msg) => {
+                const toast = document.getElementById('toast');
+                document.getElementById('toast-message').innerText = msg;
+                toast.classList.remove('opacity-0', 'translate-y-10');
+                toast.classList.add('opacity-100', 'translate-y-0');
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-10');
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                }, 3000);
+            };
+
+            const formatTime = (ts) => {
+                const diff = Date.now() - ts;
+                if (diff < 60000) return 'now';
+                if (diff < 3600000) return `${Math.floor(diff/60000)}m`;
+                if (diff < 86400000) return `${Math.floor(diff/3600000)}h`;
+                return new Date(ts).toLocaleDateString();
+            };
+
+            const getUser = (id) => state.users.find(u => u.id === id);
+
+            const toggleAuthMode = () => {
+                document.getElementById('login-form').classList.toggle('hidden-el');
+                document.getElementById('signup-form').classList.toggle('hidden-el');
+            };
+
+            const handleLogin = () => {
+                const u = document.getElementById('login-username').value.trim().toLowerCase();
+                const p = document.getElementById('login-password').value;
+                const user = state.users.find(usr => usr.username === u && usr.password === p);
+                
+                if (user) {
+                    state.currentUser = user;
+                    initApp();
+                } else {
+                    showToast('Invalid credentials. Try again.');
+                }
+            };
+
+            const handleSignup = () => {
+                const name = document.getElementById('signup-name').value.trim();
+                const username = document.getElementById('signup-username').value.trim().toLowerCase();
+                const password = document.getElementById('signup-password').value;
+
+                if (!name || !username || !password) return showToast('Complete all fields');
+                if (state.users.some(u => u.username === username)) return showToast('Username unavailable');
+
+                const newUser = {
+                    id: 'u' + Date.now(),
+                    name, username, password,
+                    avatar: `https://ui-avatars.com/api/?name=${name}&background=6366f1&color=fff&bold=true`,
+                    bio: 'Thinker. Creator. Human.'
+                };
+
+                state.users.push(newUser);
+                state.currentUser = newUser;
+                sync();
+                initApp();
+            };
+
+            const initApp = () => {
+                document.getElementById('auth-overlay').classList.add('hidden-el');
+                document.getElementById('main-app').classList.remove('hidden-el');
+                document.getElementById('current-user-avatar').src = state.currentUser.avatar;
+                document.getElementById('mobile-avatar').src = state.currentUser.avatar;
+                renderFeed();
+                renderSuggestions();
+                updateNotifBadge();
+                const welcome = state.currentUser.isDev ? `Developer mode active. Welcome, Admin.` : `Hey ${state.currentUser.name}, welcome to thinkpro.`;
+                showToast(welcome);
+            };
+
+            const logout = () => {
+                state.currentUser = null;
+                document.getElementById('main-app').classList.add('hidden-el');
+                document.getElementById('auth-overlay').classList.remove('hidden-el');
+            };
+
+            const createPostElement = (post) => {
+                const author = getUser(post.userId);
+                if (!author) return document.createElement('div');
+                const isLiked = post.likes.includes(state.currentUser.id);
+                
+                const div = document.createElement('div');
+                div.className = 'bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in transition hover:shadow-md';
+                div.innerHTML = `
+                    <div class="p-5">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.viewProfile('${author.id}')">
+                                <img src="${author.avatar}" class="w-11 h-11 rounded-full border border-slate-100 object-cover">
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <h4 class="font-black text-slate-900">${author.name}</h4>
+                                        ${author.isDev ? '<span class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border border-blue-100">Dev</span>' : ''}
+                                    </div>
+                                    <p class="text-xs text-blue-600 font-bold">@${author.username} · ${formatTime(post.timestamp)}</p>
+                                </div>
                             </div>
                         </div>
-                        <p class="text-slate-600 leading-relaxed font-medium">${p.text}</p>
-                        ${p.image ? `<img src="${p.image}" class="w-full rounded-2xl border border-slate-50 max-h-96 object-cover">` : ''}
-                        <div class="flex items-center space-x-6 pt-4 border-t border-slate-50">
-                            <button class="flex items-center space-x-2 text-slate-400"><i class="far fa-heart"></i><span class="text-xs font-bold">${p.likes || 0}</span></button>
-                            <button class="flex items-center space-x-2 text-slate-400 opacity-30"><i class="fas fa-cloud-upload-alt"></i><span class="text-[8px] font-mono">ID: ${p.id.slice(-4)}</span></button>
+                        <p class="mt-4 text-slate-700 text-lg leading-relaxed whitespace-pre-wrap">${post.content}</p>
+                    </div>
+                    ${post.image ? `<img src="${post.image}" class="w-full max-h-[500px] object-cover border-y border-slate-50">` : ''}
+                    <div class="px-5 py-4 flex items-center justify-between">
+                        <div class="flex space-x-8">
+                            <button onclick="app.toggleLike('${post.id}')" class="group flex items-center space-x-2.5 ${isLiked ? 'text-red-500' : 'text-slate-400'} transition-all active:scale-125">
+                                <i class="${isLiked ? 'fas' : 'far'} fa-heart text-xl"></i>
+                                <span class="text-sm font-black">${post.likes.length}</span>
+                            </button>
+                            <button onclick="app.openComments('${post.id}')" class="flex items-center space-x-2.5 text-slate-400 hover:text-blue-600 transition-colors">
+                                <i class="far fa-comment text-xl"></i>
+                                <span class="text-sm font-black">${post.comments.length}</span>
+                            </button>
                         </div>
                     </div>
-                `).join('');
-                
-                // Update profile stats if on profile
-                const myPosts = posts.filter(p => p.authorId === state.user.uid).length;
-                document.getElementById('stat-posts').innerText = myPosts;
-            }
-        };
+                `;
+                return div;
+            };
 
-        // Authentication & Sync Core
-        const initSession = async () => {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    state.user = user;
-                    const userRef = doc(db, 'artifacts', app_id, 'public', 'data', 'users', user.uid);
-                    const userSnap = await getDoc(userRef);
+            const renderFeed = () => {
+                const container = document.getElementById('posts-container');
+                container.innerHTML = '';
+                if (state.posts.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+                            <i class="fas fa-wind text-4xl text-slate-100 mb-4"></i>
+                            <p class="text-slate-400 font-bold">The timeline is empty. Be the first to think out loud.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                [...state.posts].sort((a, b) => b.timestamp - a.timestamp).forEach(p => {
+                    container.appendChild(createPostElement(p));
+                });
+            };
 
-                    if (userSnap.exists()) {
-                        state.userData = userSnap.data();
-                        finishAuth();
-                    } else if (state.isSignup) {
-                        const name = document.getElementById('input-name').value || 'New Thinker';
-                        const userData = {
-                            name,
-                            avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`,
-                            createdAt: serverTimestamp()
-                        };
-                        await setDoc(userRef, userData);
-                        state.userData = userData;
-                        finishAuth();
-                    } else {
-                        // Accidental anon login without registration data
-                        await signOut(auth);
-                        notify("Account not found. Please register.");
-                        location.reload();
+            const createPost = () => {
+                const content = document.getElementById('post-content').value.trim();
+                if (!content && !state.currentImage) return;
+
+                const newPost = {
+                    id: 'p' + Date.now(),
+                    userId: state.currentUser.id,
+                    content,
+                    image: state.currentImage,
+                    timestamp: Date.now(),
+                    likes: [],
+                    comments: []
+                };
+
+                state.posts.push(newPost);
+                sync();
+                document.getElementById('post-content').value = '';
+                clearImage();
+                renderFeed();
+                showToast('Post shared.');
+            };
+
+            const handleImageSelect = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        state.currentImage = event.target.result;
+                        document.getElementById('image-preview').src = state.currentImage;
+                        document.getElementById('image-preview-container').classList.remove('hidden-el');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const clearImage = () => {
+                state.currentImage = null;
+                document.getElementById('image-preview-container').classList.add('hidden-el');
+                document.getElementById('post-image-input').value = '';
+            };
+
+            const toggleLike = (postId) => {
+                const post = state.posts.find(p => p.id === postId);
+                const index = post.likes.indexOf(state.currentUser.id);
+                if (index > -1) {
+                    post.likes.splice(index, 1);
+                } else {
+                    post.likes.push(state.currentUser.id);
+                    if (post.userId !== state.currentUser.id) {
+                        addNotification(post.userId, 'like', postId);
                     }
                 }
-            });
-        };
-
-        const finishAuth = () => {
-            document.getElementById('screen-auth').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('screen-auth').style.display = 'none';
-                document.getElementById('app-shell').classList.remove('hidden');
-                updateUserUI();
-                startDatabaseListeners();
-            }, 500);
-        };
-
-        const updateUserUI = () => {
-            const u = state.userData;
-            document.getElementById('user-avatar-small').src = u.avatar;
-            document.getElementById('composer-avatar').src = u.avatar;
-            document.getElementById('profile-img').src = u.avatar;
-            document.getElementById('profile-name').innerText = u.name;
-            document.getElementById('profile-handle').innerText = `@cloud_user`;
-            document.getElementById('user-id-display').innerText = state.user.uid.slice(0, 5);
-        };
-
-        const startDatabaseListeners = () => {
-            // Live Posts Listener
-            const postsQuery = query(collection(db, 'artifacts', app_id, 'public', 'data', 'posts'), orderBy('createdAt', 'desc'));
-            onSnapshot(postsQuery, (snapshot) => {
-                const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                window.feedManager.render(posts);
-            }, (error) => {
-                console.error("Firestore error:", error);
-            });
-
-            // Global Users Search listener
-            onSnapshot(collection(db, 'artifacts', app_id, 'public', 'data', 'users'), (snapshot) => {
-                state.globalUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            }, (error) => console.error(error));
-        };
-
-        // Form Event Listeners
-        document.getElementById('form-auth').onsubmit = async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('btn-auth-submit');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Authenticating...";
-
-            try {
-                // For simplicity in this demo, we use Anonymous auth to persist unique IDs across devices 
-                // in a real app, this would use Email/Password
-                await signInAnonymously(auth);
-            } catch (err) {
-                notify("Connection failed. Check network.");
-                submitBtn.disabled = false;
-            }
-        };
-
-        document.getElementById('btn-toggle-auth').onclick = () => {
-            state.isSignup = !state.isSignup;
-            document.getElementById('field-name').classList.toggle('hidden', !state.isSignup);
-            document.getElementById('btn-auth-text').innerText = state.isSignup ? 'Create Cloud Account' : 'Sync with Cloud';
-            document.getElementById('btn-toggle-auth').innerText = state.isSignup ? 'Existing Profile? Login' : 'New user? Create Cloud Account';
-        };
-
-        document.getElementById('post-image-input').onchange = (e) => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                state.currentPostImage = ev.target.result;
-                document.getElementById('post-image-preview').src = ev.target.result;
-                document.getElementById('image-preview-container').classList.remove('hidden');
+                sync();
+                refreshCurrentView();
             };
-            reader.readAsDataURL(e.target.files[0]);
-        };
 
-        document.getElementById('search-input').oninput = (e) => {
-            const q = e.target.value.toLowerCase();
-            if (!state.globalUsers) return;
-            const results = state.globalUsers.filter(u => u.name.toLowerCase().includes(q));
-            document.getElementById('user-results').innerHTML = results.map(u => `
-                <div class="card p-4 rounded-3xl flex items-center space-x-3">
-                    <img src="${u.avatar}" class="w-10 h-10 rounded-xl">
-                    <div>
-                        <p class="font-bold text-sm">${u.name}</p>
-                        <p class="text-[10px] text-slate-400 font-mono">${u.id.slice(0,8)}</p>
-                    </div>
-                </div>
-            `).join('');
-        };
+            const openComments = (postId) => {
+                state.activePostId = postId;
+                const post = state.posts.find(p => p.id === postId);
+                const list = document.getElementById('comments-list');
+                list.innerHTML = '';
+                
+                if (post.comments.length === 0) {
+                    list.innerHTML = '<p class="text-center text-slate-400 py-10">No comments yet.</p>';
+                } else {
+                    post.comments.forEach(c => {
+                        const u = getUser(c.userId);
+                        const div = document.createElement('div');
+                        div.className = 'flex space-x-3';
+                        div.innerHTML = `
+                            <img src="${u.avatar}" class="w-10 h-10 rounded-full border border-slate-100">
+                            <div class="bg-slate-50 rounded-2xl p-4 flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <p class="text-sm font-black text-slate-900">${u.name}</p>
+                                    ${u.isDev ? '<span class="text-[8px] text-blue-600 bg-blue-100/50 px-1 rounded font-black">Dev</span>' : ''}
+                                    <span class="text-xs font-bold text-slate-400 ml-2">${formatTime(c.timestamp)}</span>
+                                </div>
+                                <p class="text-slate-600 mt-1">${c.text}</p>
+                            </div>
+                        `;
+                        list.appendChild(div);
+                    });
+                }
+                document.getElementById('comment-modal').classList.remove('hidden-el');
+                document.getElementById('comment-modal').classList.add('flex');
+            };
 
-        document.getElementById('post-input').oninput = function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
-        };
+            const submitComment = () => {
+                const text = document.getElementById('comment-input').value.trim();
+                if (!text) return;
+                const post = state.posts.find(p => p.id === state.activePostId);
+                post.comments.push({ id: 'c' + Date.now(), userId: state.currentUser.id, text, timestamp: Date.now() });
+                if (post.userId !== state.currentUser.id) addNotification(post.userId, 'comment', state.activePostId);
+                document.getElementById('comment-input').value = '';
+                sync();
+                openComments(state.activePostId);
+                refreshCurrentView();
+            };
 
-        // Initialize
-        initSession();
+            const closeCommentModal = () => {
+                document.getElementById('comment-modal').classList.add('hidden-el');
+                document.getElementById('comment-modal').classList.remove('flex');
+            };
 
+            const navigate = (screen) => {
+                state.currentScreen = screen;
+                ['feed', 'discover', 'notifications', 'profile'].forEach(s => {
+                    document.getElementById(`nav-${s}`)?.classList.toggle('active-nav', s === screen);
+                });
+                document.getElementById('screen-feed').classList.toggle('hidden-el', screen !== 'feed');
+                document.getElementById('screen-profile').classList.toggle('hidden-el', screen !== 'profile');
+                document.getElementById('screen-notifications').classList.toggle('hidden-el', screen !== 'notifications');
+                document.getElementById('screen-discover').classList.toggle('hidden-el', screen !== 'discover');
+
+                if (screen === 'profile') renderProfile(state.currentUser.id);
+                if (screen === 'notifications') renderNotifications();
+            };
+
+            const renderProfile = (userId) => {
+                const user = getUser(userId);
+                document.getElementById('profile-page-avatar').src = user.avatar;
+                document.getElementById('profile-page-name').innerText = user.name;
+                document.getElementById('profile-page-username').innerText = `@${user.username}`;
+                document.getElementById('profile-page-bio').innerText = user.bio;
+                document.getElementById('dev-badge-profile').classList.toggle('hidden-el', !user.isDev);
+                
+                const userPosts = state.posts.filter(p => p.userId === userId).sort((a,b) => b.timestamp - a.timestamp);
+                document.getElementById('profile-post-count').innerText = userPosts.length;
+                const container = document.getElementById('user-posts-container');
+                container.innerHTML = '';
+                userPosts.forEach(p => container.appendChild(createPostElement(p)));
+            };
+
+            const viewProfile = (uid) => { navigate('profile'); renderProfile(uid); };
+
+            const editProfile = () => {
+                const newName = prompt('Enter your name:', state.currentUser.name);
+                const newBio = prompt('Enter your bio:', state.currentUser.bio);
+                if (newName) state.currentUser.name = newName;
+                if (newBio) state.currentUser.bio = newBio;
+                sync();
+                renderProfile(state.currentUser.id);
+            };
+
+            const searchUsers = (q) => {
+                const res = document.getElementById('search-results');
+                if (!q) { res.innerHTML = '<p class="text-slate-400 text-center py-12">Search for a username or name</p>'; return; }
+                const matched = state.users.filter(u => u.name.toLowerCase().includes(q.toLowerCase()) || u.username.toLowerCase().includes(q.toLowerCase()));
+                res.innerHTML = matched.length ? '' : '<p class="text-slate-400 text-center py-12">No results found.</p>';
+                matched.forEach(u => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm transition hover:shadow-md';
+                    div.innerHTML = `
+                        <div class="flex items-center space-x-4 cursor-pointer" onclick="app.viewProfile('${u.id}')">
+                            <img src="${u.avatar}" class="w-12 h-12 rounded-full border border-slate-50">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <h4 class="font-black">${u.name}</h4>
+                                    ${u.isDev ? '<span class="text-[8px] text-blue-600 bg-blue-50 px-1 rounded font-black border border-blue-100">Dev</span>' : ''}
+                                </div>
+                                <p class="text-sm text-blue-600 font-bold">@${u.username}</p>
+                            </div>
+                        </div>
+                        <button class="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-black shadow-lg shadow-blue-100">View</button>
+                    `;
+                    res.appendChild(div);
+                });
+            };
+
+            const renderSuggestions = () => {
+                const container = document.getElementById('suggestions-container');
+                container.innerHTML = '';
+                const others = state.users.filter(u => u.id !== state.currentUser?.id).slice(0, 5);
+                if (!others.length) { container.innerHTML = '<p class="text-slate-400 text-sm">Grow the community.</p>'; return; }
+                others.forEach(u => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between group';
+                    div.innerHTML = `
+                        <div class="flex items-center space-x-3 cursor-pointer" onclick="app.viewProfile('${u.id}')">
+                            <img src="${u.avatar}" class="w-10 h-10 rounded-full">
+                            <div class="overflow-hidden">
+                                <p class="font-black text-sm truncate">${u.name}</p>
+                                <p class="text-xs text-blue-600 font-bold">@${u.username}</p>
+                            </div>
+                        </div>
+                        <button onclick="app.viewProfile('${u.id}')" class="text-blue-600 text-xs font-black uppercase tracking-widest hover:underline">Profile</button>
+                    `;
+                    container.appendChild(div);
+                });
+            };
+
+            const addNotification = (to, type, pid) => {
+                state.notifications.unshift({ id: Date.now(), from: state.currentUser.id, to, type, pid, read: false, timestamp: Date.now() });
+                sync();
+                updateNotifBadge();
+            };
+
+            const updateNotifBadge = () => {
+                if (!state.currentUser) return;
+                const unread = state.notifications.filter(n => n.to === state.currentUser.id && !n.read).length;
+                document.getElementById('notif-badge').classList.toggle('hidden-el', unread === 0);
+                document.getElementById('mobile-notif-badge').classList.toggle('hidden-el', unread === 0);
+            };
+
+            const renderNotifications = () => {
+                const list = document.getElementById('notifications-list');
+                const userNotifs = state.notifications.filter(n => n.to === state.currentUser.id);
+                list.innerHTML = userNotifs.length ? '' : '<div class="text-center py-20 text-slate-300 font-bold">Everything is quiet.</div>';
+                userNotifs.forEach(n => {
+                    const from = getUser(n.from);
+                    n.read = true;
+                    const div = document.createElement('div');
+                    div.className = 'bg-white p-5 rounded-2xl flex items-center space-x-4 border border-slate-100 shadow-sm';
+                    const icon = n.type === 'like' ? 'fa-heart text-red-500' : 'fa-comment text-blue-500';
+                    div.innerHTML = `
+                        <div class="p-3 rounded-xl bg-slate-50"><i class="fas ${icon} text-lg"></i></div>
+                        <img src="${from.avatar}" class="w-10 h-10 rounded-full border border-slate-50">
+                        <p class="flex-1 text-sm text-slate-700"><strong>${from.name}</strong> ${n.type === 'like' ? 'liked your post' : 'commented on your thoughts'}.</p>
+                        <span class="text-xs font-bold text-slate-400 uppercase">${formatTime(n.timestamp)}</span>
+                    `;
+                    list.appendChild(div);
+                });
+                sync();
+                updateNotifBadge();
+            };
+
+            const refreshCurrentView = () => {
+                if (state.currentScreen === 'feed') renderFeed();
+                if (state.currentScreen === 'profile') renderProfile(state.currentUser.id);
+            };
+
+            return {
+                handleLogin, handleSignup, toggleAuthMode, logout,
+                navigate, createPost, toggleLike, openComments,
+                closeCommentModal, submitComment, handleImageSelect,
+                clearImage, viewProfile, editProfile, searchUsers
+            };
+        })();
+
+        window.addEventListener('submit', (e) => e.preventDefault());
     </script>
 </body>
 </html>
