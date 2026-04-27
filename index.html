@@ -3,537 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>thinkpro | local-first production</title>
+    <title>thinkpro | Professional Social Network</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
         :root { 
-            --accent: #4f46e5; 
-            --accent-soft: #eef2ff;
+            --accent: #6366f1; 
+            --accent-soft: rgba(99, 102, 241, 0.1);
         }
 
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: #fcfcfd; 
-            -webkit-tap-highlight-color: transparent; 
-            overflow-x: hidden; 
+            color: #0f172a;
+            overscroll-behavior: none;
         }
 
         .glass { 
-            background: rgba(255, 255, 255, 0.85); 
-            backdrop-filter: saturate(180%) blur(20px); 
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
         .card { 
             background: white; 
-            border: 1px solid rgba(0,0,0,0.05); 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            border: 1px solid rgba(0,0,0,0.06); 
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.39);
+            transition: all 0.2s ease;
         }
 
-        .hidden-el { display: none !important; }
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.23);
+            filter: brightness(1.1);
+        }
 
-        /* Animations */
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .anim-slide-up { animation: slideUp 0.4s ease-out forwards; }
+
+        .nav-active { color: var(--accent); position: relative; }
+        .nav-active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
         }
 
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .anim-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .anim-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        .anim-scale-in { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-
-        .nav-link { 
-            color: #64748b; 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-            border-radius: 1.25rem; 
-        }
-
-        .nav-link.active { 
-            color: var(--accent); 
-            background: var(--accent-soft); 
-            transform: scale(1.05);
-        }
-
-        .status-pulse { 
-            width: 8px; height: 8px; background: #22c55e; border-radius: 50%; 
-            animation: pulse 2s infinite; 
-        }
-
-        @keyframes pulse { 
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 
-            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 
-            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } 
-        }
-
-        #post-text:focus { outline: none; }
-        
-        /* Skeleton Loading Effect */
-        .skeleton {
-            background: linear-gradient(90deg, #f1f5f9 25%, #f8fafc 50%, #f1f5f9 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="text-slate-900">
-
-    <!-- Kernel Watchdog Layer -->
-    <div id="kernel-monitor" class="fixed top-4 right-4 z-[100] flex items-center space-x-2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full border border-slate-100 shadow-sm opacity-30 transition-opacity">
-        <div class="status-pulse"></div>
-        <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Kernel Active</span>
-    </div>
+<body class="antialiased">
 
     <!-- Auth Screen -->
-    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
-        <div class="w-full max-w-sm p-8 text-center anim-scale-in">
-            <div class="w-20 h-20 bg-indigo-600 rounded-[2.5rem] shadow-2xl shadow-indigo-200 flex items-center justify-center mx-auto mb-8 transform hover:rotate-12 transition-transform cursor-pointer">
-                <i class="fas fa-bolt text-white text-3xl"></i>
+    <div id="screen-auth" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 transition-all duration-500">
+        <div class="w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl rotate-3">
+                <i class="fas fa-bolt-lightning text-white text-2xl"></i>
             </div>
-            <h1 class="text-4xl font-black tracking-tight mb-2">thinkpro</h1>
-            <p id="auth-desc" class="text-slate-400 font-medium mb-10">Local-First Secure Network</p>
-            
-            <form id="auth-form" class="space-y-4 text-left">
-                <div id="signup-name-field" class="hidden-el anim-fade-in">
-                    <input type="text" id="reg-name" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-indigo-100 transition-all outline-none" placeholder="Full Name">
+            <h1 class="text-3xl font-extrabold mb-2 tracking-tight">thinkpro.</h1>
+            <p id="auth-subtitle" class="text-slate-400 font-medium mb-10">Local-first professional network.</p>
+
+            <form id="form-auth" class="space-y-4 text-left">
+                <div id="field-name" class="hidden">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                    <input type="text" id="input-name" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-indigo-300 transition-all" placeholder="Enter your name">
                 </div>
-                <input type="email" id="auth-email" required class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-indigo-100 transition-all outline-none" placeholder="Email address">
-                <input type="password" id="auth-password" required class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:bg-white focus:border-indigo-100 transition-all outline-none" placeholder="Password">
-                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">
-                    <span id="auth-btn-label">Sign In</span>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / Email</label>
+                    <input type="text" id="input-email" required class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-indigo-300 transition-all" placeholder="yourname">
+                </div>
+                <button type="submit" class="w-full btn-primary font-bold py-4 rounded-2xl mt-4 flex items-center justify-center space-x-2">
+                    <span id="btn-auth-text">Enter the Network</span>
+                    <i class="fas fa-arrow-right text-xs opacity-50"></i>
                 </button>
             </form>
-            <button id="auth-toggle-btn" class="mt-8 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors">
-                Create a persistent local account
+
+            <button id="btn-toggle-auth" class="mt-8 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors">
+                New user? Create a profile
             </button>
         </div>
     </div>
 
     <!-- App Shell -->
-    <div id="app-shell" class="hidden-el min-h-screen flex flex-col md:flex-row">
+    <div id="app-shell" class="hidden min-h-screen pb-20 lg:pb-0 lg:pl-72">
         
-        <!-- Sidebar Navigation -->
-        <nav class="w-24 lg:w-72 glass border-r border-slate-100 flex-col hidden md:flex sticky top-0 h-screen p-6">
-            <div class="p-2 mb-10 hidden lg:block">
-                <h2 class="text-2xl font-black tracking-tighter text-indigo-600">thinkpro.</h2>
-            </div>
-            <div class="flex-1 space-y-3">
-                <button onclick="app.navigate('feed')" id="nav-feed" class="nav-link w-full flex items-center lg:space-x-4 p-4 active justify-center lg:justify-start">
-                    <i class="fas fa-house-chimney text-xl"></i><span class="hidden lg:block font-bold">Timeline</span>
+        <!-- Sidebar (Desktop) -->
+        <aside class="fixed left-0 top-0 h-full w-72 bg-white border-r border-slate-100 p-8 hidden lg:flex flex-col z-50">
+            <h2 class="text-2xl font-black text-indigo-600 mb-12 tracking-tighter">thinkpro.</h2>
+            <nav class="flex-1 space-y-2">
+                <button onclick="router.navigate('feed')" id="nav-d-feed" class="w-full flex items-center space-x-4 p-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
+                    <i class="fas fa-house"></i><span>Home Feed</span>
                 </button>
-                <button onclick="app.navigate('discover')" id="nav-discover" class="nav-link w-full flex items-center lg:space-x-4 p-4 justify-center lg:justify-start">
-                    <i class="fas fa-compass text-xl"></i><span class="hidden lg:block font-bold">Discover</span>
+                <button onclick="router.navigate('discover')" id="nav-d-discover" class="w-full flex items-center space-x-4 p-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
+                    <i class="fas fa-search"></i><span>Discover</span>
                 </button>
-                <button onclick="app.navigate('profile')" id="nav-profile" class="nav-link w-full flex items-center lg:space-x-4 p-4 justify-center lg:justify-start">
-                    <i class="fas fa-circle-user text-xl"></i><span class="hidden lg:block font-bold">Profile</span>
+                <button onclick="router.navigate('profile')" id="nav-d-profile" class="w-full flex items-center space-x-4 p-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
+                    <i class="fas fa-user"></i><span>My Profile</span>
                 </button>
-            </div>
-            <button onclick="app.logout()" class="p-4 rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center lg:space-x-4 justify-center lg:justify-start">
-                <i class="fas fa-power-off text-xl"></i><span class="hidden lg:block font-bold">Logout</span>
+            </nav>
+            <button onclick="app.logout()" class="p-4 text-slate-400 hover:text-red-500 font-bold flex items-center space-x-4 transition-colors">
+                <i class="fas fa-sign-out-alt"></i><span>Log Out</span>
             </button>
-        </nav>
+        </aside>
 
-        <!-- Content Area -->
-        <main class="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
-            <!-- Feed View -->
-            <div id="view-feed" class="anim-slide-up space-y-8">
-                <div class="card p-6 rounded-[2.5rem] shadow-sm">
-                    <div class="flex items-start space-x-4">
-                        <img id="user-avatar-mini" class="w-12 h-12 rounded-2xl object-cover bg-slate-100 shadow-sm">
+        <!-- Dynamic Header -->
+        <header class="sticky top-0 z-40 glass px-6 py-4 flex items-center justify-between">
+            <h1 id="view-title" class="text-xl font-extrabold tracking-tight capitalize">Home Feed</h1>
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:flex items-center space-x-2 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
+                    <div class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-black text-indigo-600 uppercase">Local Storage</span>
+                </div>
+                <img id="user-avatar-small" class="w-9 h-9 rounded-xl object-cover bg-slate-100 border border-slate-100">
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <main id="view-container" class="max-w-2xl mx-auto p-4 md:p-8">
+            
+            <!-- Feed -->
+            <div id="screen-feed" class="anim-slide-up space-y-6">
+                <div class="card p-5 rounded-[2rem] shadow-sm">
+                    <div class="flex space-x-4">
+                        <img id="composer-avatar" class="w-12 h-12 rounded-2xl object-cover bg-slate-50">
                         <div class="flex-1">
-                            <textarea id="post-text" rows="1" class="w-full border-none focus:ring-0 text-xl font-medium resize-none bg-transparent" placeholder="What's on your mind?"></textarea>
-                            <div class="flex items-center justify-between mt-4 border-t border-slate-50 pt-4">
-                                <div class="flex space-x-4">
-                                    <button class="text-slate-400 hover:text-indigo-600 transition-colors"><i class="far fa-image"></i></button>
-                                    <button class="text-slate-400 hover:text-indigo-600 transition-colors"><i class="far fa-smile"></i></button>
+                            <textarea id="post-input" class="w-full border-none resize-none py-2 text-lg font-medium bg-transparent outline-none no-scrollbar" placeholder="What are you thinking?" rows="1"></textarea>
+                            <div id="image-preview-container" class="hidden mt-3 relative inline-block">
+                                <img id="post-image-preview" class="max-h-48 rounded-2xl border border-slate-100">
+                                <button onclick="feedManager.clearImage()" class="absolute -top-2 -right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="flex justify-between items-center mt-4 pt-4 border-t border-slate-50">
+                                <div class="flex space-x-4 text-slate-400">
+                                    <label class="cursor-pointer hover:text-indigo-600 transition-colors">
+                                        <i class="far fa-image"></i>
+                                        <input type="file" id="post-image-input" class="hidden" accept="image/*">
+                                    </label>
                                 </div>
-                                <button onclick="app.submitPost()" class="bg-indigo-600 text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all">Post</button>
+                                <button onclick="feedManager.createPost()" class="btn-primary px-8 py-2.5 rounded-xl font-bold text-sm">Share Post</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div id="posts-list" class="space-y-6 pb-32">
-                    <!-- Skeletons -->
-                    <div class="card p-6 rounded-[2.5rem] skeleton h-40"></div>
-                    <div class="card p-6 rounded-[2.5rem] skeleton h-40"></div>
-                </div>
+                <div id="feed-list" class="space-y-6"></div>
             </div>
 
-            <!-- Profile View -->
-            <div id="view-profile" class="hidden-el anim-slide-up space-y-8">
-                <div class="card rounded-[3rem] overflow-hidden">
-                    <div class="h-44 bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700"></div>
-                    <div class="px-8 pb-10 flex flex-col items-center -mt-20">
-                        <img id="profile-big-avatar" class="w-36 h-36 rounded-[2.5rem] border-8 border-white shadow-2xl object-cover bg-white">
-                        <h2 id="profile-name" class="text-3xl font-black mt-6 tracking-tight"></h2>
-                        <p id="profile-handle" class="text-indigo-600 font-bold text-sm tracking-wide"></p>
-                        <p id="profile-bio" class="text-slate-500 mt-4 text-center max-w-sm leading-relaxed"></p>
-                        <div class="flex space-x-3 mt-8">
-                            <button onclick="app.editProfile()" class="px-8 py-3 rounded-2xl border-2 border-slate-100 font-bold text-sm hover:bg-slate-50 transition-all active:scale-95">Edit Profile</button>
+            <!-- Profile -->
+            <div id="screen-profile" class="hidden anim-slide-up">
+                <div class="card rounded-[2.5rem] overflow-hidden">
+                    <div class="h-32 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
+                    <div class="px-8 pb-10 flex flex-col items-center -mt-12">
+                        <img id="profile-img" class="w-28 h-28 rounded-[2.2rem] border-8 border-white shadow-xl bg-white object-cover">
+                        <h2 id="profile-name" class="text-2xl font-black mt-4 text-slate-900"></h2>
+                        <p id="profile-handle" class="text-indigo-600 font-bold text-sm mb-6"></p>
+                        <div class="grid grid-cols-3 gap-8 w-full border-t border-slate-50 pt-8 mt-2">
+                            <div class="text-center">
+                                <p id="stat-posts" class="font-black text-xl text-slate-800">0</p>
+                                <p class="text-[10px] font-black text-slate-300 uppercase">Posts</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="font-black text-xl text-slate-800">124</p>
+                                <p class="text-[10px] font-black text-slate-300 uppercase">Readers</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="font-black text-xl text-slate-800">88</p>
+                                <p class="text-[10px] font-black text-slate-300 uppercase">Following</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div id="user-posts-list" class="space-y-6"></div>
             </div>
 
-            <!-- Discover View -->
-            <div id="view-discover" class="hidden-el anim-slide-up space-y-6">
-                <div class="relative group">
-                    <i class="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors"></i>
-                    <input type="text" oninput="app.search(this.value)" class="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-3xl shadow-sm focus:shadow-indigo-50 transition-all text-lg outline-none" placeholder="Find thinkers...">
+            <!-- Discover -->
+            <div id="screen-discover" class="hidden anim-slide-up space-y-4">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                    <input type="text" id="search-input" placeholder="Search thinkers..." class="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm outline-none focus:border-indigo-300 transition-all">
                 </div>
-                <div id="search-results" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                <div id="user-results" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
         </main>
 
-        <!-- Mobile Nav -->
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-slate-100 p-3 flex justify-around items-center z-40">
-            <button onclick="app.navigate('feed')" id="mob-feed" class="p-4 nav-link active"><i class="fas fa-house-chimney text-xl"></i></button>
-            <button onclick="app.navigate('discover')" id="mob-discover" class="p-4 nav-link"><i class="fas fa-compass text-xl"></i></button>
-            <button onclick="app.navigate('profile')" id="mob-profile" class="p-4 nav-link"><i class="fas fa-circle-user text-xl"></i></button>
+        <!-- Nav (Mobile) -->
+        <nav class="fixed bottom-0 left-0 right-0 glass px-6 py-4 flex justify-around items-center lg:hidden z-50">
+            <button onclick="router.navigate('feed')" id="nav-m-feed" class="p-3 text-slate-400"><i class="fas fa-house text-xl"></i></button>
+            <button onclick="router.navigate('discover')" id="nav-m-discover" class="p-3 text-slate-400"><i class="fas fa-search text-xl"></i></button>
+            <button onclick="router.navigate('profile')" id="nav-m-profile" class="p-3 text-slate-400"><i class="fas fa-user text-xl"></i></button>
         </nav>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 glass text-indigo-600 px-6 py-3 rounded-2xl shadow-2xl opacity-0 translate-y-8 transition-all z-[100] font-bold text-sm pointer-events-none"></div>
+    <!-- Notification -->
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[200] opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center space-x-3">
+            <span id="toast-msg" class="text-sm font-bold"></span>
+        </div>
+    </div>
 
     <script>
-        let db;
-        const state = { 
-            user: null, 
-            isSignup: false, 
-            currentView: 'feed', 
-            dbReady: false,
-            kernelRunning: false
+        // Store
+        const DB = {
+            get: (key) => JSON.parse(localStorage.getItem(key)) || [],
+            save: (key, data) => localStorage.setItem(key, JSON.stringify(data))
         };
 
-        const STORAGE_KEY = 'THINKPRO_SQL_V3_FINAL';
-
-        // --- Core Persistance ---
-        const save = () => {
-            if (!state.dbReady) return;
-            try {
-                const data = db.export();
-                const blob = new Blob([data]);
-                const reader = new FileReader();
-                reader.onload = () => localStorage.setItem(STORAGE_KEY, reader.result);
-                reader.readAsDataURL(blob);
-            } catch (e) { console.error("Persistence failed:", e); }
+        const state = {
+            user: JSON.parse(localStorage.getItem('thinkpro_session')),
+            isSignup: false,
+            currentPostImage: null,
+            posts: DB.get('thinkpro_posts'),
+            users: DB.get('thinkpro_users')
         };
 
-        const load = async (SQL) => {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    const binary = atob(saved.split(',')[1]);
-                    const array = new Uint8Array(binary.length);
-                    for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
-                    return new SQL.Database(array);
-                } catch (e) { return null; }
-            }
-            return null;
+        // UI Utils
+        const notify = (msg) => {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            t.style.opacity = '1';
+            t.style.transform = 'translate(-50%, 10px)';
+            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, 0)'; }, 3000);
         };
 
-        // --- Kernel Watchdog (While loop logic for 24/7 reliability) ---
-        const initWatchdog = () => {
-            if (state.kernelRunning) return;
-            state.kernelRunning = true;
-
-            setInterval(() => {
-                const mon = document.getElementById('kernel-monitor');
-                mon.classList.remove('opacity-30');
-                mon.classList.add('opacity-100');
-                
-                // Uptime Safety Check
-                if (state.user) {
-                    const app = document.getElementById('app-shell');
-                    const auth = document.getElementById('auth-screen');
-                    if (app.classList.contains('hidden-el')) {
-                        app.classList.remove('hidden-el');
-                        auth.classList.add('hidden-el');
-                    }
-                } else {
-                    const app = document.getElementById('app-shell');
-                    const auth = document.getElementById('auth-screen');
-                    if (!app.classList.contains('hidden-el')) {
-                        app.classList.add('hidden-el');
-                        auth.classList.remove('hidden-el');
-                    }
-                }
-
-                // Database Integrity Pulse
-                if (state.dbReady) {
-                    try { db.exec("SELECT 1"); } catch(e) { location.reload(); }
-                }
-
-                setTimeout(() => mon.classList.add('opacity-30'), 800);
-            }, 3000);
-        };
-
-        const init = async () => {
-            try {
-                const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}` });
-                db = await load(SQL);
-                
-                if (!db) {
-                    db = new SQL.Database();
-                    db.run(`
-                        CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE, pass TEXT, name TEXT, bio TEXT, avatar TEXT);
-                        CREATE TABLE posts (id INTEGER PRIMARY KEY AUTOINCREMENT, uid INTEGER, content TEXT, ts DATETIME DEFAULT CURRENT_TIMESTAMP);
-                        CREATE TABLE likes (pid INTEGER, uid INTEGER, PRIMARY KEY(pid, uid));
-                    `);
-                    db.run("INSERT INTO users (email, pass, name, bio, avatar) VALUES (?,?,?,?,?)", [
-                        'hello@think.pro', 'pass', 'Default Thinker', 'Exploring the local-first frontier.', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop'
-                    ]);
-                }
-                
-                state.dbReady = true;
-                document.getElementById('posts-list').innerHTML = ''; // Clear skeletons
-                initWatchdog();
-            } catch (e) {
-                console.error("Critical Engine Error");
-            }
-        };
-
-        const toast = (msg) => {
-            const el = document.getElementById('toast');
-            el.innerText = msg;
-            el.style.opacity = '1';
-            el.style.transform = 'translate(-50%, 0)';
-            setTimeout(() => {
-                el.style.opacity = '0';
-                el.style.transform = 'translate(-50%, 2rem)';
-            }, 2500);
-        };
-
-        const sync = () => {
-            if (!state.user || !state.dbReady) return;
-            save();
-            if (state.currentView === 'feed') renderFeed();
-            if (state.currentView === 'profile') renderProfile(state.user.id);
-        };
-
-        const renderFeed = () => {
-            const res = db.exec(`
-                SELECT p.id, p.content, p.ts, u.name, u.avatar, u.id as uid,
-                (SELECT COUNT(*) FROM likes WHERE pid = p.id) as likes,
-                (SELECT 1 FROM likes WHERE pid = p.id AND uid = ${state.user.id}) as is_liked
-                FROM posts p JOIN users u ON p.uid = u.id ORDER BY p.ts DESC
-            `);
-            const list = document.getElementById('posts-list');
-            list.innerHTML = res.length ? '' : '<div class="text-center py-20 text-slate-300 font-medium anim-fade-in">Silence... for now.</div>';
-            
-            if (res.length) {
-                res[0].values.forEach(v => {
-                    const p = { id: v[0], content: v[1], time: timeAgo(v[2]), author: v[3], avatar: v[4], uid: v[5], likes: v[6], liked: v[7] };
-                    const d = document.createElement('div');
-                    d.className = 'card p-6 rounded-[2.5rem] flex space-x-4 anim-slide-up';
-                    d.innerHTML = `
-                        <img src="${p.avatar}" onclick="app.viewUser(${p.uid})" class="w-12 h-12 rounded-2xl cursor-pointer bg-slate-50 object-cover hover:ring-2 hover:ring-indigo-100 transition-all">
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between mb-1">
-                                <h4 class="font-bold text-slate-900 cursor-pointer hover:text-indigo-600 transition-colors" onclick="app.viewUser(${p.uid})">${p.author}</h4>
-                                <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">${p.time}</span>
-                            </div>
-                            <p class="text-slate-600 leading-relaxed break-words">${p.content}</p>
-                            <div class="mt-4 pt-4 border-t border-slate-50">
-                                <button onclick="app.like(${p.id})" class="flex items-center space-x-2 ${p.liked ? 'text-rose-500' : 'text-slate-400'} hover:scale-110 active:scale-90 transition-all">
-                                    <i class="${p.liked ? 'fas' : 'far'} fa-heart"></i>
-                                    <span class="text-xs font-black">${p.likes}</span>
-                                </button>
-                            </div>
-                        </div>`;
-                    list.appendChild(d);
+        const router = {
+            navigate: (view) => {
+                document.getElementById('view-title').innerText = view === 'feed' ? 'Home Feed' : view;
+                ['feed', 'profile', 'discover'].forEach(v => {
+                    document.getElementById(`screen-${v}`).classList.toggle('hidden', v !== view);
+                    const m = document.getElementById(`nav-m-${v}`);
+                    const d = document.getElementById(`nav-d-${v}`);
+                    if(m) { m.classList.toggle('nav-active', v === view); m.classList.toggle('text-slate-400', v !== view); }
+                    if(d) { d.classList.toggle('nav-active', v === view); d.classList.toggle('text-indigo-600', v === view); }
                 });
+                if(view === 'profile') app.updateProfileView();
             }
         };
 
-        const renderProfile = (uid) => {
-            const uData = db.exec("SELECT * FROM users WHERE id = ?", [uid]);
-            if (!uData.length) return;
-            const r = uData[0].values[0];
-            const user = { id: r[0], name: r[3], bio: r[4], avatar: r[5] };
-
-            document.getElementById('profile-big-avatar').src = user.avatar;
-            document.getElementById('profile-name').innerText = user.name;
-            document.getElementById('profile-handle').innerText = `@${user.name.toLowerCase().replace(/\s/g, '')}`;
-            document.getElementById('profile-bio').innerText = user.bio || 'This thinker hasn\'t shared a bio yet.';
-
-            const postsRes = db.exec("SELECT content, ts FROM posts WHERE uid = ? ORDER BY ts DESC", [uid]);
-            const list = document.getElementById('user-posts-list');
-            list.innerHTML = postsRes.length ? '' : '<div class="text-center py-10 text-slate-300 text-sm italic">Nothing posted here.</div>';
-            if (postsRes.length) {
-                postsRes[0].values.forEach(v => {
-                    const d = document.createElement('div');
-                    d.className = 'card p-6 rounded-[2.5rem] anim-slide-up';
-                    d.innerHTML = `<p class="text-slate-700 leading-relaxed">${v[0]}</p><p class="text-[10px] font-black text-slate-300 mt-4 uppercase tracking-tighter">${timeAgo(v[1])}</p>`;
-                    list.appendChild(d);
-                });
-            }
-        };
-
-        const timeAgo = (ts) => {
-            const d = new Date(ts + 'Z');
-            const diff = (new Date() - d) / 1000;
-            if (diff < 60) return 'now';
-            if (diff < 3600) return `${Math.floor(diff/60)}m`;
-            if (diff < 86400) return `${Math.floor(diff/3600)}h`;
-            return d.toLocaleDateString();
-        };
-
-        window.app = {
-            navigate: (screen) => {
-                state.currentView = screen;
-                ['feed', 'profile', 'discover'].forEach(s => {
-                    const el = document.getElementById(`view-${s}`);
-                    const nav = document.getElementById(`nav-${s}`);
-                    const mob = document.getElementById(`mob-${s}`);
-                    
-                    if (s === screen) {
-                        el.classList.remove('hidden-el');
-                        if (nav) nav.classList.add('active');
-                        if (mob) mob.classList.add('active');
-                    } else {
-                        el.classList.add('hidden-el');
-                        if (nav) nav.classList.remove('active');
-                        if (mob) mob.classList.remove('active');
-                    }
-                });
-                sync();
+        const app = {
+            init: () => {
+                if(state.user) {
+                    document.getElementById('screen-auth').style.display = 'none';
+                    document.getElementById('app-shell').classList.remove('hidden');
+                    app.updateUI();
+                    feedManager.render();
+                }
+            },
+            updateUI: () => {
+                const u = state.user;
+                document.getElementById('user-avatar-small').src = u.avatar;
+                document.getElementById('composer-avatar').src = u.avatar;
+                document.getElementById('profile-img').src = u.avatar;
+                document.getElementById('profile-name').innerText = u.name;
+                document.getElementById('profile-handle').innerText = `@${u.handle}`;
+            },
+            updateProfileView: () => {
+                const myPosts = state.posts.filter(p => p.authorHandle === state.user.handle);
+                document.getElementById('stat-posts').innerText = myPosts.length;
             },
             logout: () => {
-                state.user = null;
-                document.getElementById('auth-password').value = '';
-                toast("Session Terminated.");
+                localStorage.removeItem('thinkpro_session');
+                location.reload();
+            }
+        };
+
+        const feedManager = {
+            createPost: () => {
+                const input = document.getElementById('post-input');
+                const text = input.value.trim();
+                if(!text && !state.currentPostImage) return;
+
+                const post = {
+                    id: Date.now(),
+                    text,
+                    image: state.currentPostImage,
+                    author: state.user.name,
+                    authorHandle: state.user.handle,
+                    avatar: state.user.avatar,
+                    createdAt: Date.now(),
+                    likes: 0
+                };
+
+                state.posts.unshift(post);
+                DB.save('thinkpro_posts', state.posts);
+                input.value = '';
+                feedManager.clearImage();
+                feedManager.render();
+                notify("Post shared locally!");
             },
-            submitPost: () => {
-                const el = document.getElementById('post-text');
-                const val = el.value.trim();
-                if (!val) return;
-                db.run("INSERT INTO posts (uid, content) VALUES (?,?)", [state.user.id, val]);
-                el.value = '';
-                toast("Thought Synced.");
-                sync();
+            clearImage: () => {
+                state.currentPostImage = null;
+                document.getElementById('image-preview-container').classList.add('hidden');
+                document.getElementById('post-image-input').value = '';
             },
-            like: (pid) => {
-                try {
-                    db.run("INSERT INTO likes (pid, uid) VALUES (?,?)", [pid, state.user.id]);
-                } catch(e) {
-                    db.run("DELETE FROM likes WHERE pid = ? AND uid = ?", [pid, state.user.id]);
+            render: () => {
+                const container = document.getElementById('feed-list');
+                if(state.posts.length === 0) {
+                    container.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold italic">Silence... be the first to break it.</div>`;
+                    return;
                 }
-                sync();
-            },
-            viewUser: (uid) => {
-                app.navigate('profile');
-                renderProfile(uid);
-            },
-            editProfile: () => {
-                const n = prompt("Display Name", state.user.name);
-                const b = prompt("Short Bio", state.user.bio);
-                if (n) {
-                    db.run("UPDATE users SET name = ?, bio = ? WHERE id = ?", [n, b, state.user.id]);
-                    state.user.name = n;
-                    state.user.bio = b;
-                    sync();
-                    toast("Identity Updated.");
-                }
-            },
-            search: (q) => {
-                const resEl = document.getElementById('search-results');
-                if (!q.trim()) { resEl.innerHTML = ''; return; }
-                const users = db.exec("SELECT id, name, avatar FROM users WHERE name LIKE ? LIMIT 10", [`%${q}%`]);
-                resEl.innerHTML = '';
-                if (users.length) {
-                    users[0].values.forEach(u => {
-                        const d = document.createElement('div');
-                        d.className = 'card p-4 rounded-2xl flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-all active:scale-95 anim-fade-in';
-                        d.onclick = () => app.viewUser(u[0]);
-                        d.innerHTML = `
+                container.innerHTML = state.posts.map(p => `
+                    <div class="card p-6 rounded-[2.5rem] anim-slide-up flex flex-col space-y-4">
+                        <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
-                                <img src="${u[2]}" class="w-10 h-10 rounded-xl object-cover shadow-sm">
-                                <p class="font-bold text-sm text-slate-800">${u[1]}</p>
+                                <img src="${p.avatar}" class="w-10 h-10 rounded-xl object-cover">
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-900">${p.author}</h4>
+                                    <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">@${p.authorHandle}</p>
+                                </div>
                             </div>
-                            <i class="fas fa-arrow-right text-slate-300 text-xs"></i>
-                        `;
-                        resEl.appendChild(d);
-                    });
-                } else {
-                    resEl.innerHTML = '<p class="col-span-2 text-center py-10 text-slate-400 text-sm italic">No thinkers found.</p>';
-                }
+                        </div>
+                        <p class="text-slate-600 leading-relaxed font-medium">${p.text}</p>
+                        ${p.image ? `<img src="${p.image}" class="w-full rounded-2xl border border-slate-50 max-h-96 object-cover">` : ''}
+                        <div class="flex items-center space-x-6 pt-4 border-t border-slate-50">
+                            <button class="flex items-center space-x-2 text-slate-400"><i class="far fa-heart"></i><span class="text-xs font-bold">${p.likes}</span></button>
+                            <button class="flex items-center space-x-2 text-slate-400"><i class="far fa-comment"></i><span class="text-xs font-bold">Reply</span></button>
+                        </div>
+                    </div>
+                `).join('');
             }
         };
 
-        // UI Event Listeners
-        document.getElementById('auth-toggle-btn').onclick = () => {
-            state.isSignup = !state.isSignup;
-            document.getElementById('signup-name-field').classList.toggle('hidden-el', !state.isSignup);
-            document.getElementById('auth-btn-label').innerText = state.isSignup ? 'Create Profile' : 'Access Grid';
-            document.getElementById('auth-toggle-btn').innerText = state.isSignup ? 'Already a member? Sign In' : 'New here? Join the local network';
-        };
-
-        document.getElementById('auth-form').onsubmit = (e) => {
+        // Listeners
+        document.getElementById('form-auth').onsubmit = (e) => {
             e.preventDefault();
-            const email = document.getElementById('auth-email').value;
-            const pass = document.getElementById('auth-password').value;
-            const name = document.getElementById('reg-name').value;
+            const handle = document.getElementById('input-email').value.trim().toLowerCase();
+            const name = document.getElementById('input-name').value.trim();
 
-            if (state.isSignup) {
-                try {
-                    db.run("INSERT INTO users (email, pass, name, bio, avatar) VALUES (?,?,?,?,?)", [
-                        email, pass, name, 'Ready to think.', `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4f46e5&color=fff&bold=true`
-                    ]);
-                    save();
-                    toast("Account Localized.");
-                    document.getElementById('auth-toggle-btn').click();
-                } catch(e) { toast("Email unavailable."); }
+            if(state.isSignup) {
+                const user = {
+                    handle, name,
+                    avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${handle}`,
+                    createdAt: Date.now()
+                };
+                state.users.push(user);
+                DB.save('thinkpro_users', state.users);
+                state.user = user;
             } else {
-                const res = db.exec("SELECT * FROM users WHERE email = ? AND pass = ?", [email, pass]);
-                if (res.length && res[0].values.length) {
-                    const r = res[0].values[0];
-                    state.user = { id: r[0], email: r[1], name: r[3], bio: r[4], avatar: r[5] };
-                    
-                    document.getElementById('auth-screen').style.opacity = '0';
-                    document.getElementById('auth-screen').style.transform = 'scale(1.1)';
-                    setTimeout(() => {
-                        document.getElementById('auth-screen').classList.add('hidden-el');
-                        document.getElementById('app-shell').classList.remove('hidden-el');
-                        document.getElementById('user-avatar-mini').src = state.user.avatar;
-                        app.navigate('feed');
-                    }, 300);
-                } else { toast("Access Denied."); }
+                const user = state.users.find(u => u.handle === handle);
+                if(!user) return notify("Profile not found locally.");
+                state.user = user;
             }
+
+            localStorage.setItem('thinkpro_session', JSON.stringify(state.user));
+            app.init();
         };
 
-        // Textarea Auto-Resize
-        const tx = document.getElementById('post-text');
-        tx.addEventListener("input", function() {
-            this.style.height = "auto";
-            this.style.height = (this.scrollHeight) + "px";
-        }, false);
+        document.getElementById('btn-toggle-auth').onclick = () => {
+            state.isSignup = !state.isSignup;
+            document.getElementById('field-name').classList.toggle('hidden', !state.isSignup);
+            document.getElementById('btn-auth-text').innerText = state.isSignup ? 'Create Profile' : 'Enter the Network';
+            document.getElementById('btn-toggle-auth').innerText = state.isSignup ? 'Already a user? Log In' : 'New user? Create a profile';
+        };
 
-        window.onload = init;
+        document.getElementById('post-image-input').onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                state.currentPostImage = ev.target.result;
+                document.getElementById('post-image-preview').src = ev.target.result;
+                document.getElementById('image-preview-container').classList.remove('hidden');
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        document.getElementById('search-input').oninput = (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = state.users.filter(u => u.name.toLowerCase().includes(val) || u.handle.toLowerCase().includes(val));
+            document.getElementById('user-results').innerHTML = filtered.map(u => `
+                <div class="card p-4 rounded-3xl flex items-center space-x-3">
+                    <img src="${u.avatar}" class="w-10 h-10 rounded-xl">
+                    <div>
+                        <p class="font-bold text-sm">${u.name}</p>
+                        <p class="text-[10px] text-slate-400">@${u.handle}</p>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        document.getElementById('post-input').oninput = function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        };
+
+        app.init();
     </script>
 </body>
 </html>
