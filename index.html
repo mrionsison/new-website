@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>thinkpro | SQL & Server Architecture</title>
+    <title>thinkpro | Cloud Architecture</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -66,6 +66,16 @@
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -74,10 +84,10 @@
     <div id="screen-auth" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 transition-all duration-500">
         <div class="w-full max-w-sm text-center">
             <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-xl rotate-3">
-                <i class="fas fa-server text-white text-2xl"></i>
+                <i class="fas fa-cloud text-white text-2xl"></i>
             </div>
             <h1 class="text-3xl font-extrabold mb-2 tracking-tight">thinkpro.</h1>
-            <p id="auth-subtitle" class="text-slate-400 font-medium mb-10">SQL Engine & Mock Server Active.</p>
+            <p id="auth-subtitle" class="text-slate-400 font-medium mb-10">Cloud Database Synchronized.</p>
 
             <form id="form-auth" class="space-y-4 text-left">
                 <div id="field-name" class="hidden">
@@ -85,17 +95,17 @@
                     <input type="text" id="input-name" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-indigo-300 transition-all" placeholder="Enter your name">
                 </div>
                 <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Username / Email</label>
-                    <input type="text" id="input-email" required class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-indigo-300 transition-all" placeholder="yourname">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                    <input type="email" id="input-email" required class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-indigo-300 transition-all" placeholder="name@domain.com">
                 </div>
-                <button type="submit" class="w-full btn-primary font-bold py-4 rounded-2xl mt-4 flex items-center justify-center space-x-2">
-                    <span id="btn-auth-text">Initialize Connection</span>
-                    <i class="fas fa-database text-xs opacity-50"></i>
+                <button type="submit" id="btn-auth-submit" class="w-full btn-primary font-bold py-4 rounded-2xl mt-4 flex items-center justify-center space-x-2">
+                    <span id="btn-auth-text">Sync with Cloud</span>
+                    <i class="fas fa-sync text-xs opacity-50"></i>
                 </button>
             </form>
 
             <button id="btn-toggle-auth" class="mt-8 text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors">
-                New user? Register on Server
+                New user? Create Cloud Account
             </button>
         </div>
     </div>
@@ -119,12 +129,12 @@
             </nav>
             
             <div class="mt-auto p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Server Logs</p>
-                <div id="server-status" class="text-[10px] text-green-500 font-mono">200 OK: DB Connected</div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Database Status</p>
+                <div id="server-status" class="text-[10px] text-green-500 font-mono">Cloud Sync: Active</div>
             </div>
 
             <button onclick="app.logout()" class="p-4 text-slate-400 hover:text-red-500 font-bold flex items-center space-x-4 transition-colors">
-                <i class="fas fa-sign-out-alt"></i><span>Terminate Session</span>
+                <i class="fas fa-sign-out-alt"></i><span>Sign Out</span>
             </button>
         </aside>
 
@@ -133,8 +143,8 @@
             <h1 id="view-title" class="text-xl font-extrabold tracking-tight capitalize">Home Feed</h1>
             <div class="flex items-center space-x-3">
                 <div class="hidden sm:flex items-center space-x-2 bg-slate-900 px-3 py-1.5 rounded-full">
-                    <i class="fas fa-microchip text-indigo-400 text-[10px]"></i>
-                    <span id="latency-indicator" class="text-[10px] font-black text-white uppercase tracking-tighter">0ms</span>
+                    <i class="fas fa-globe text-indigo-400 text-[10px]"></i>
+                    <span id="latency-indicator" class="text-[10px] font-black text-white uppercase tracking-tighter">Live</span>
                 </div>
                 <img id="user-avatar-small" class="w-9 h-9 rounded-xl object-cover bg-slate-100 border border-slate-100">
             </div>
@@ -142,13 +152,12 @@
 
         <!-- Main Container -->
         <main id="view-container" class="max-w-2xl mx-auto p-4 md:p-8">
-            <!-- Screens same as previous version but logic will differ -->
             <div id="screen-feed" class="anim-slide-up space-y-6">
                 <div class="card p-5 rounded-[2rem] shadow-sm">
                     <div class="flex space-x-4">
                         <img id="composer-avatar" class="w-12 h-12 rounded-2xl object-cover bg-slate-50">
                         <div class="flex-1">
-                            <textarea id="post-input" class="w-full border-none resize-none py-2 text-lg font-medium bg-transparent outline-none no-scrollbar" placeholder="What are you thinking?" rows="1"></textarea>
+                            <textarea id="post-input" class="w-full border-none resize-none py-2 text-lg font-medium bg-transparent outline-none no-scrollbar" placeholder="Sync your thoughts..." rows="1"></textarea>
                             <div id="image-preview-container" class="hidden mt-3 relative inline-block">
                                 <img id="post-image-preview" class="max-h-48 rounded-2xl border border-slate-100">
                                 <button onclick="feedManager.clearImage()" class="absolute -top-2 -right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs"><i class="fas fa-times"></i></button>
@@ -160,7 +169,7 @@
                                         <input type="file" id="post-image-input" class="hidden" accept="image/*">
                                     </label>
                                 </div>
-                                <button onclick="feedManager.createPost()" class="btn-primary px-8 py-2.5 rounded-xl font-bold text-sm">Post to Server</button>
+                                <button onclick="feedManager.createPost()" id="btn-post" class="btn-primary px-8 py-2.5 rounded-xl font-bold text-sm">Post to Cloud</button>
                             </div>
                         </div>
                     </div>
@@ -181,12 +190,12 @@
                                 <p class="text-[10px] font-black text-slate-300 uppercase">Posts</p>
                             </div>
                             <div class="text-center">
-                                <p class="font-black text-xl text-slate-800">0</p>
-                                <p class="text-[10px] font-black text-slate-300 uppercase">Followers</p>
+                                <p class="font-black text-xl text-slate-800">Global</p>
+                                <p class="text-[10px] font-black text-slate-300 uppercase">Reach</p>
                             </div>
                             <div class="text-center">
-                                <p class="font-black text-xl text-slate-800">0</p>
-                                <p class="text-[10px] font-black text-slate-300 uppercase">Following</p>
+                                <p class="font-black text-xl text-slate-800" id="user-id-display">...</p>
+                                <p class="text-[10px] font-black text-slate-300 uppercase">User ID</p>
                             </div>
                         </div>
                     </div>
@@ -196,7 +205,7 @@
             <div id="screen-discover" class="hidden anim-slide-up space-y-4">
                 <div class="relative">
                     <i class="fas fa-search absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                    <input type="text" id="search-input" placeholder="Querying user database..." class="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm outline-none focus:border-indigo-300 transition-all">
+                    <input type="text" id="search-input" placeholder="Search global users..." class="w-full pl-14 pr-6 py-5 bg-white border border-slate-100 rounded-[2rem] shadow-sm outline-none focus:border-indigo-300 transition-all">
                 </div>
                 <div id="user-results" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
@@ -217,103 +226,28 @@
         </div>
     </div>
 
-    <script>
-        /**
-         * VIRTUAL SQL DATABASE ENGINE
-         * Mimics relational table structures and persistence
-         */
-        const SQL_DB = {
-            tables: {
-                users: 'tp_users',
-                posts: 'tp_posts',
-                sessions: 'tp_sessions'
-            },
-            init: function() {
-                if (!localStorage.getItem(this.tables.users)) localStorage.setItem(this.tables.users, '[]');
-                if (!localStorage.getItem(this.tables.posts)) localStorage.setItem(this.tables.posts, '[]');
-            },
-            query: function(table, predicate = () => true) {
-                const data = JSON.parse(localStorage.getItem(this.tables[table]) || '[]');
-                return data.filter(predicate);
-            },
-            insert: function(table, record) {
-                const data = JSON.parse(localStorage.getItem(this.tables[table]) || '[]');
-                const newRecord = { ...record, id: Date.now() + Math.random() };
-                data.unshift(newRecord);
-                localStorage.setItem(this.tables[table], JSON.stringify(data));
-                return newRecord;
-            }
-        };
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, addDoc, updateDoc, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        /**
-         * MOCK SERVER LAYER
-         * Provides an "API" interface with simulated latency and response codes
-         */
-        const MockServer = {
-            latency: () => Math.floor(Math.random() * 150) + 50,
-            log: (msg) => {
-                const logEl = document.getElementById('server-status');
-                if(logEl) logEl.innerText = msg;
-            },
-            request: async function(endpoint, method, payload) {
-                const start = performance.now();
-                return new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        const end = performance.now();
-                        document.getElementById('latency-indicator').innerText = `${Math.round(end - start)}ms`;
-                        
-                        try {
-                            const result = this.endpoints[endpoint](method, payload);
-                            this.log(`200 OK: ${endpoint}`);
-                            resolve(result);
-                        } catch (e) {
-                            this.log(`500 ERR: ${e.message}`);
-                            reject(e);
-                        }
-                    }, this.latency());
-                });
-            },
-            endpoints: {
-                '/auth/login': (method, { handle }) => {
-                    const users = SQL_DB.query('users', u => u.handle === handle);
-                    if (users.length === 0) throw new Error("User not found");
-                    return users[0];
-                },
-                '/auth/register': (method, { handle, name }) => {
-                    const exists = SQL_DB.query('users', u => u.handle === handle);
-                    if (exists.length > 0) throw new Error("Handle taken");
-                    const user = { 
-                        handle, name, 
-                        avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${handle}` 
-                    };
-                    return SQL_DB.insert('users', user);
-                },
-                '/posts': (method, payload) => {
-                    if (method === 'GET') return SQL_DB.query('posts');
-                    if (method === 'POST') return SQL_DB.insert('posts', payload);
-                },
-                '/users/search': (method, { q }) => {
-                    return SQL_DB.query('users', u => 
-                        u.name.toLowerCase().includes(q.toLowerCase()) || 
-                        u.handle.toLowerCase().includes(q.toLowerCase())
-                    );
-                },
-                '/users/stats': (method, { handle }) => {
-                    const posts = SQL_DB.query('posts', p => p.authorHandle === handle);
-                    return { postCount: posts.length };
-                }
-            }
-        };
+        // Firebase Configuration
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseApp = initializeApp(firebaseConfig);
+        const auth = getAuth(firebaseApp);
+        const db = getFirestore(firebaseApp);
 
-        /**
-         * FRONTEND APPLICATION LOGIC
-         */
+        // State Management
         const state = {
-            currentUser: JSON.parse(localStorage.getItem('tp_session')),
+            user: null,
+            userData: null,
             isSignup: false,
-            currentPostImage: null
+            currentPostImage: null,
+            posts: []
         };
 
+        // Utility Functions
         const notify = (msg) => {
             const t = document.getElementById('toast');
             document.getElementById('toast-msg').innerText = msg;
@@ -322,8 +256,16 @@
             setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, 0)'; }, 3000);
         };
 
-        const router = {
-            navigate: async (view) => {
+        // UI Handlers
+        window.app = {
+            logout: async () => {
+                await signOut(auth);
+                location.reload();
+            }
+        };
+
+        window.router = {
+            navigate: (view) => {
                 document.getElementById('view-title').innerText = view === 'feed' ? 'Home Feed' : view;
                 ['feed', 'profile', 'discover'].forEach(v => {
                     document.getElementById(`screen-${v}`).classList.toggle('hidden', v !== view);
@@ -332,120 +274,166 @@
                     if(m) { m.classList.toggle('nav-active', v === view); m.classList.toggle('text-slate-400', v !== view); }
                     if(d) { d.classList.toggle('nav-active', v === view); d.classList.toggle('text-indigo-600', v === view); }
                 });
-
-                if(view === 'feed') feedManager.render();
-                if(view === 'profile') app.loadProfile();
             }
         };
 
-        const app = {
-            init: () => {
-                SQL_DB.init();
-                if(state.currentUser) {
-                    document.getElementById('screen-auth').style.display = 'none';
-                    document.getElementById('app-shell').classList.remove('hidden');
-                    app.updateUI();
-                    feedManager.render();
-                }
-            },
-            updateUI: () => {
-                const u = state.currentUser;
-                document.getElementById('user-avatar-small').src = u.avatar;
-                document.getElementById('composer-avatar').src = u.avatar;
-                document.getElementById('profile-img').src = u.avatar;
-                document.getElementById('profile-name').innerText = u.name;
-                document.getElementById('profile-handle').innerText = `@${u.handle}`;
-            },
-            loadProfile: async () => {
-                const stats = await MockServer.request('/users/stats', 'GET', { handle: state.currentUser.handle });
-                document.getElementById('stat-posts').innerText = stats.postCount;
-            },
-            logout: () => {
-                localStorage.removeItem('tp_session');
-                location.reload();
-            }
-        };
-
-        const feedManager = {
+        // Feed Logic
+        window.feedManager = {
             createPost: async () => {
+                if (!state.user) return;
                 const input = document.getElementById('post-input');
                 const text = input.value.trim();
-                if(!text && !state.currentPostImage) return;
+                if (!text && !state.currentPostImage) return;
 
-                const payload = {
-                    text,
-                    image: state.currentPostImage,
-                    author: state.currentUser.name,
-                    authorHandle: state.currentUser.handle,
-                    avatar: state.currentUser.avatar,
-                    createdAt: Date.now(),
-                    likes: 0
-                };
+                const btn = document.getElementById('btn-post');
+                btn.disabled = true;
+                btn.innerText = "Syncing...";
 
-                await MockServer.request('/posts', 'POST', payload);
-                input.value = '';
-                feedManager.clearImage();
-                feedManager.render();
-                notify("Post committed to SQL DB");
+                try {
+                    await addDoc(collection(db, 'artifacts', app_id, 'public', 'data', 'posts'), {
+                        text,
+                        image: state.currentPostImage,
+                        author: state.userData.name,
+                        authorId: state.user.uid,
+                        avatar: state.userData.avatar,
+                        createdAt: serverTimestamp(),
+                        likes: 0
+                    });
+                    input.value = '';
+                    window.feedManager.clearImage();
+                    notify("Persisted to Cloud Database");
+                } catch (e) {
+                    notify("Sync error. Try again.");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "Post to Cloud";
+                }
             },
             clearImage: () => {
                 state.currentPostImage = null;
                 document.getElementById('image-preview-container').classList.add('hidden');
                 document.getElementById('post-image-input').value = '';
             },
-            render: async () => {
-                const posts = await MockServer.request('/posts', 'GET');
+            render: (posts) => {
                 const container = document.getElementById('feed-list');
-                
-                if(posts.length === 0) {
-                    container.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold italic">No records in tp_posts table.</div>`;
+                if (posts.length === 0) {
+                    container.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold italic">Global cloud feed is empty.</div>`;
                     return;
                 }
 
                 container.innerHTML = posts.map(p => `
                     <div class="card p-6 rounded-[2.5rem] anim-slide-up flex flex-col space-y-4">
                         <div class="flex items-center space-x-3">
-                            <img src="${p.avatar}" class="w-10 h-10 rounded-xl object-cover">
+                            <img src="${p.avatar}" class="w-10 h-10 rounded-xl object-cover bg-slate-50">
                             <div>
                                 <h4 class="font-bold text-sm text-slate-900">${p.author}</h4>
-                                <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">@${p.authorHandle}</p>
+                                <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">${p.createdAt?.toDate().toLocaleTimeString() || 'Just now'}</p>
                             </div>
                         </div>
                         <p class="text-slate-600 leading-relaxed font-medium">${p.text}</p>
                         ${p.image ? `<img src="${p.image}" class="w-full rounded-2xl border border-slate-50 max-h-96 object-cover">` : ''}
                         <div class="flex items-center space-x-6 pt-4 border-t border-slate-50">
-                            <button class="flex items-center space-x-2 text-slate-400"><i class="far fa-heart"></i><span class="text-xs font-bold">${p.likes}</span></button>
-                            <button class="flex items-center space-x-2 text-slate-400"><i class="fas fa-code"></i><span class="text-[8px] font-mono">ID: ${p.id.toString().slice(-4)}</span></button>
+                            <button class="flex items-center space-x-2 text-slate-400"><i class="far fa-heart"></i><span class="text-xs font-bold">${p.likes || 0}</span></button>
+                            <button class="flex items-center space-x-2 text-slate-400 opacity-30"><i class="fas fa-cloud-upload-alt"></i><span class="text-[8px] font-mono">ID: ${p.id.slice(-4)}</span></button>
                         </div>
                     </div>
                 `).join('');
+                
+                // Update profile stats if on profile
+                const myPosts = posts.filter(p => p.authorId === state.user.uid).length;
+                document.getElementById('stat-posts').innerText = myPosts;
             }
         };
 
-        // UI Handlers
+        // Authentication & Sync Core
+        const initSession = async () => {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    state.user = user;
+                    const userRef = doc(db, 'artifacts', app_id, 'public', 'data', 'users', user.uid);
+                    const userSnap = await getDoc(userRef);
+
+                    if (userSnap.exists()) {
+                        state.userData = userSnap.data();
+                        finishAuth();
+                    } else if (state.isSignup) {
+                        const name = document.getElementById('input-name').value || 'New Thinker';
+                        const userData = {
+                            name,
+                            avatar: `https://api.dicebear.com/7.x/notionists/svg?seed=${user.uid}`,
+                            createdAt: serverTimestamp()
+                        };
+                        await setDoc(userRef, userData);
+                        state.userData = userData;
+                        finishAuth();
+                    } else {
+                        // Accidental anon login without registration data
+                        await signOut(auth);
+                        notify("Account not found. Please register.");
+                        location.reload();
+                    }
+                }
+            });
+        };
+
+        const finishAuth = () => {
+            document.getElementById('screen-auth').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('screen-auth').style.display = 'none';
+                document.getElementById('app-shell').classList.remove('hidden');
+                updateUserUI();
+                startDatabaseListeners();
+            }, 500);
+        };
+
+        const updateUserUI = () => {
+            const u = state.userData;
+            document.getElementById('user-avatar-small').src = u.avatar;
+            document.getElementById('composer-avatar').src = u.avatar;
+            document.getElementById('profile-img').src = u.avatar;
+            document.getElementById('profile-name').innerText = u.name;
+            document.getElementById('profile-handle').innerText = `@cloud_user`;
+            document.getElementById('user-id-display').innerText = state.user.uid.slice(0, 5);
+        };
+
+        const startDatabaseListeners = () => {
+            // Live Posts Listener
+            const postsQuery = query(collection(db, 'artifacts', app_id, 'public', 'data', 'posts'), orderBy('createdAt', 'desc'));
+            onSnapshot(postsQuery, (snapshot) => {
+                const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                window.feedManager.render(posts);
+            }, (error) => {
+                console.error("Firestore error:", error);
+            });
+
+            // Global Users Search listener
+            onSnapshot(collection(db, 'artifacts', app_id, 'public', 'data', 'users'), (snapshot) => {
+                state.globalUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }, (error) => console.error(error));
+        };
+
+        // Form Event Listeners
         document.getElementById('form-auth').onsubmit = async (e) => {
             e.preventDefault();
-            const handle = document.getElementById('input-email').value.trim().toLowerCase();
-            const name = document.getElementById('input-name').value.trim();
+            const submitBtn = document.getElementById('btn-auth-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Authenticating...";
 
             try {
-                const endpoint = state.isSignup ? '/auth/register' : '/auth/login';
-                const user = await MockServer.request(endpoint, 'POST', { handle, name });
-                
-                state.currentUser = user;
-                localStorage.setItem('tp_session', JSON.stringify(user));
-                app.init();
-                notify(`Logged in as ${user.name}`);
+                // For simplicity in this demo, we use Anonymous auth to persist unique IDs across devices 
+                // in a real app, this would use Email/Password
+                await signInAnonymously(auth);
             } catch (err) {
-                notify(err.message);
+                notify("Connection failed. Check network.");
+                submitBtn.disabled = false;
             }
         };
 
         document.getElementById('btn-toggle-auth').onclick = () => {
             state.isSignup = !state.isSignup;
             document.getElementById('field-name').classList.toggle('hidden', !state.isSignup);
-            document.getElementById('btn-auth-text').innerText = state.isSignup ? 'Register on Server' : 'Initialize Connection';
-            document.getElementById('btn-toggle-auth').innerText = state.isSignup ? 'Existing Profile? Login' : 'New user? Register on Server';
+            document.getElementById('btn-auth-text').innerText = state.isSignup ? 'Create Cloud Account' : 'Sync with Cloud';
+            document.getElementById('btn-toggle-auth').innerText = state.isSignup ? 'Existing Profile? Login' : 'New user? Create Cloud Account';
         };
 
         document.getElementById('post-image-input').onchange = (e) => {
@@ -458,16 +446,16 @@
             reader.readAsDataURL(e.target.files[0]);
         };
 
-        document.getElementById('search-input').oninput = async (e) => {
-            const q = e.target.value;
-            if (q.length < 1) return;
-            const results = await MockServer.request('/users/search', 'GET', { q });
+        document.getElementById('search-input').oninput = (e) => {
+            const q = e.target.value.toLowerCase();
+            if (!state.globalUsers) return;
+            const results = state.globalUsers.filter(u => u.name.toLowerCase().includes(q));
             document.getElementById('user-results').innerHTML = results.map(u => `
                 <div class="card p-4 rounded-3xl flex items-center space-x-3">
                     <img src="${u.avatar}" class="w-10 h-10 rounded-xl">
                     <div>
                         <p class="font-bold text-sm">${u.name}</p>
-                        <p class="text-[10px] text-slate-400">@${u.handle}</p>
+                        <p class="text-[10px] text-slate-400 font-mono">${u.id.slice(0,8)}</p>
                     </div>
                 </div>
             `).join('');
@@ -478,7 +466,9 @@
             this.style.height = this.scrollHeight + 'px';
         };
 
-        app.init();
+        // Initialize
+        initSession();
+
     </script>
 </body>
 </html>
