@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>thinkpro | cloud-sync</title>
+    <title>thinkpro | cloud-sync pro</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,79 +11,116 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+        }
+
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s ease;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #0f172a; color: #f8fafc; }
+            .glass { background: rgba(15, 23, 42, 0.8) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
+            .card { background: #1e293b !important; border-color: #334155 !important; }
+            .text-slate-900 { color: #f1f5f9 !important; }
+            .text-slate-700 { color: #cbd5e1 !important; }
+            .text-slate-400 { color: #94a3b8 !important; }
+            .bg-white { background-color: #1e293b !important; }
+            .border-slate-100 { border-color: #334155 !important; }
         }
 
         .glass { 
-            background: rgba(255, 255, 255, 0.8); 
-            backdrop-filter: blur(12px); 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(16px); 
             border: 1px solid rgba(255, 255, 255, 0.3); 
         }
 
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(8px); } 
+        .card {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+        }
+        .card:active { transform: scale(0.98); }
+
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(20px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
-        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-        .btn-active { transform: scale(0.95); }
-        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .gradient-border {
+            position: relative;
+            border-radius: 2rem;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(to right, #6366f1, #a855f7) border-box;
+            border: 2px solid transparent;
+        }
     </style>
 </head>
 <body class="text-slate-900 selection:bg-indigo-100">
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] opacity-0 translate-y-10 transition-all duration-500 pointer-events-none">
-        <div class="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-3">
+        <div class="bg-slate-900 dark:bg-indigo-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-3">
             <i id="toast-icon" class="fas fa-cloud-check text-emerald-400"></i>
             <span id="toast-msg" class="text-sm font-bold"></span>
         </div>
     </div>
 
     <!-- Auth Screen -->
-    <section id="screen-auth" class="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-        <div class="w-full max-w-sm text-center space-y-8 animate-fade-in">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-indigo-600 text-white rounded-[2.2rem] rotate-12 shadow-2xl mb-4">
-                <i class="fas fa-brain text-4xl -rotate-12"></i>
+    <section id="screen-auth" class="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
+        <div class="w-full max-w-sm text-center space-y-8 animate-slide-up">
+            <div class="relative inline-block">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-indigo-600 text-white rounded-[2.5rem] rotate-12 shadow-2xl mb-4 overflow-hidden group">
+                    <i class="fas fa-brain text-5xl -rotate-12 transition-transform group-hover:scale-110"></i>
+                    <div class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent"></div>
+                </div>
+                <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full border-4 border-slate-50 dark:border-slate-950 flex items-center justify-center text-white text-[10px]">
+                    <i class="fas fa-bolt"></i>
+                </div>
             </div>
             <div>
-                <h1 class="text-5xl font-extrabold tracking-tight">thinkpro</h1>
-                <p class="text-slate-400 mt-3 font-medium">Decentralized cloud-sync social mesh.</p>
+                <h1 class="text-6xl font-extrabold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-500">thinkpro</h1>
+                <p class="text-slate-400 mt-4 font-medium px-4">Synchronize your thoughts across the neural mesh.</p>
             </div>
-            <div class="space-y-4">
-                <button id="btn-auth" onclick="handleAuth()" class="w-full bg-slate-900 text-white font-bold py-5 rounded-[1.8rem] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 flex items-center justify-center">
-                    <span>Enter Global Mesh</span>
+            <div class="space-y-4 pt-4">
+                <button id="btn-auth" onclick="handleAuth()" class="w-full bg-slate-900 dark:bg-indigo-600 text-white font-bold py-5 rounded-[2rem] hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200 dark:shadow-none flex items-center justify-center group">
+                    <span class="group-hover:tracking-widest transition-all">CONNECT NEURAL LINK</span>
                 </button>
             </div>
             <div class="flex items-center justify-center space-x-2 text-[10px] uppercase tracking-widest text-slate-400 font-bold">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>System Ready</span>
+                <span>End-to-End Encrypted</span>
             </div>
         </div>
     </section>
 
     <!-- Main Screen -->
-    <section id="screen-main" class="hidden min-h-screen pb-24">
+    <section id="screen-main" class="hidden min-h-screen pb-28">
         <!-- Header -->
         <header class="sticky top-0 z-40 glass border-b border-slate-100/50">
-            <div class="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-sm shadow-lg shadow-indigo-100">
+            <div class="max-w-2xl mx-auto px-4 h-18 flex items-center justify-between py-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-lg shadow-lg shadow-indigo-200">
                         <i class="fas fa-brain"></i>
                     </div>
-                    <span class="font-extrabold text-xl tracking-tight hidden xs:block">thinkpro</span>
+                    <div>
+                        <h2 class="font-black text-xl tracking-tight leading-none">thinkpro</h2>
+                        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">v2.4 Live</span>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <button onclick="updateProfile()" class="flex items-center space-x-2 group pl-1 pr-3 py-1 bg-slate-50 rounded-full border border-slate-100 hover:border-indigo-200 transition-all">
-                        <img id="nav-user-avatar" src="https://ui-avatars.com/api/?name=User" class="w-7 h-7 rounded-full object-cover">
+                <div class="flex items-center space-x-2">
+                    <button onclick="updateProfile()" class="flex items-center space-x-2 group p-1 pr-3 bg-slate-50 dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all">
+                        <img id="nav-user-avatar" src="" class="w-8 h-8 rounded-full object-cover">
                         <span id="nav-user-name" class="text-xs font-bold text-slate-700 max-w-[80px] truncate">Thinker</span>
                     </button>
-                    <button onclick="logout()" class="text-slate-400 hover:text-rose-500 transition-colors w-9 h-9 flex items-center justify-center rounded-full hover:bg-rose-50">
+                    <button onclick="logout()" class="text-slate-400 hover:text-rose-500 transition-colors w-10 h-10 flex items-center justify-center rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/20">
                         <i class="fas fa-power-off text-sm"></i>
                     </button>
                 </div>
@@ -91,44 +128,80 @@
         </header>
 
         <!-- Content -->
-        <main class="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        <main class="max-w-2xl mx-auto px-4 py-8 space-y-8">
             <!-- Composer -->
-            <div class="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-4">
                 <div class="flex space-x-4">
-                    <img id="composer-avatar" src="https://ui-avatars.com/api/?name=User" class="w-11 h-11 rounded-[1.1rem] bg-slate-100 object-cover shadow-sm">
-                    <textarea id="post-input" placeholder="What's on your mind?" class="flex-1 bg-transparent border-none focus:ring-0 text-lg font-medium placeholder:text-slate-300 resize-none h-20 pt-2 no-scrollbar" maxlength="280"></textarea>
-                </div>
-                <div class="flex items-center justify-between pt-4 border-t border-slate-50">
-                    <div class="flex space-x-1 text-slate-400">
-                        <button class="w-10 h-10 hover:bg-slate-50 rounded-xl transition-all flex items-center justify-center"><i class="far fa-image"></i></button>
-                        <button class="w-10 h-10 hover:bg-slate-50 rounded-xl transition-all flex items-center justify-center"><i class="far fa-smile"></i></button>
+                    <img id="composer-avatar" src="" class="w-12 h-12 rounded-2xl bg-slate-100 object-cover shadow-inner">
+                    <div class="flex-1 space-y-3">
+                        <textarea id="post-input" placeholder="Broadcast to the mesh..." class="w-full bg-transparent border-none focus:ring-0 text-lg font-medium placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none h-24 pt-2 no-scrollbar" maxlength="280"></textarea>
+                        <div id="image-preview-container" class="hidden relative inline-block">
+                             <div class="w-24 h-24 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse"></div>
+                             <button class="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full text-[10px]"><i class="fas fa-times"></i></button>
+                        </div>
                     </div>
-                    <button id="btn-post" onclick="submitPost()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-slate-100 disabled:opacity-50">
-                        Post Cloud
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+                    <div class="flex space-x-1">
+                        <button onclick="simulateImageUpload()" class="w-11 h-11 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-400 hover:text-indigo-600 rounded-xl transition-all flex items-center justify-center"><i class="far fa-image text-lg"></i></button>
+                        <button class="w-11 h-11 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-400 hover:text-indigo-600 rounded-xl transition-all flex items-center justify-center"><i class="far fa-smile text-lg"></i></button>
+                        <button class="w-11 h-11 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-slate-400 hover:text-indigo-600 rounded-xl transition-all flex items-center justify-center"><i class="fas fa-hashtag text-lg"></i></button>
+                    </div>
+                    <button id="btn-post" onclick="submitPost()" class="bg-indigo-600 text-white px-8 py-3.5 rounded-[1.2rem] font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 dark:shadow-none disabled:opacity-50 flex items-center space-x-2">
+                        <i class="fas fa-paper-plane text-sm"></i>
+                        <span>Broadcast</span>
                     </button>
                 </div>
             </div>
 
             <!-- Feed Container -->
-            <div id="feed-container" class="space-y-4">
-                <!-- Posts will be injected here -->
-                <div id="feed-loading" class="flex flex-col items-center justify-center py-20 space-y-4">
-                    <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Waking up the cloud...</p>
+            <div id="feed-container" class="space-y-6">
+                <!-- Skeleton Loader -->
+                <div class="space-y-6">
+                    <div class="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] animate-pulse border border-slate-100 dark:border-slate-800">
+                        <div class="flex space-x-4 mb-4">
+                            <div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-2xl"></div>
+                            <div class="flex-1 space-y-2 py-1">
+                                <div class="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/4"></div>
+                                <div class="h-3 bg-slate-50 dark:bg-slate-800 rounded w-1/6"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-4 bg-slate-50 dark:bg-slate-800 rounded w-full"></div>
+                            <div class="h-4 bg-slate-50 dark:bg-slate-800 rounded w-5/6"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
 
         <!-- Navigation (Mobile) -->
-        <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm glass rounded-[2rem] h-16 flex items-center justify-around px-4 shadow-2xl border border-white/50 z-50">
-            <button class="w-12 h-12 flex items-center justify-center text-indigo-600"><i class="fas fa-home text-xl"></i></button>
-            <button class="w-12 h-12 flex items-center justify-center text-slate-400"><i class="fas fa-search text-xl"></i></button>
-            <button class="w-12 h-12 flex items-center justify-center text-slate-400"><i class="fas fa-bell text-xl"></i></button>
-            <button onclick="updateProfile()" class="w-12 h-12 flex items-center justify-center text-slate-400"><i class="fas fa-user text-xl"></i></button>
+        <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm glass rounded-[2.2rem] h-18 flex items-center justify-around px-4 shadow-2xl border border-white/50 dark:border-slate-800 z-50">
+            <button class="w-14 h-14 flex flex-col items-center justify-center text-indigo-600 transition-all active:scale-90">
+                <i class="fas fa-th-large text-xl"></i>
+                <span class="text-[9px] font-black uppercase mt-1">Feed</span>
+            </button>
+            <button class="w-14 h-14 flex flex-col items-center justify-center text-slate-400 hover:text-indigo-400 transition-all">
+                <i class="fas fa-search text-xl"></i>
+                <span class="text-[9px] font-black uppercase mt-1">Mesh</span>
+            </button>
+            <div class="w-14 h-14 flex items-center justify-center -translate-y-4">
+                <button onclick="document.getElementById('post-input').focus()" class="w-14 h-14 bg-indigo-600 text-white rounded-2xl shadow-xl shadow-indigo-300 dark:shadow-none flex items-center justify-center active:scale-95 transition-transform">
+                    <i class="fas fa-plus text-xl"></i>
+                </button>
+            </div>
+            <button class="w-14 h-14 flex flex-col items-center justify-center text-slate-400 hover:text-indigo-400 transition-all">
+                <i class="fas fa-bolt text-xl"></i>
+                <span class="text-[9px] font-black uppercase mt-1">Activity</span>
+            </button>
+            <button onclick="updateProfile()" class="w-14 h-14 flex flex-col items-center justify-center text-slate-400 hover:text-indigo-400 transition-all">
+                <i class="fas fa-circle-user text-xl"></i>
+                <span class="text-[9px] font-black uppercase mt-1">You</span>
+            </button>
         </nav>
     </section>
 
-    <!-- Firebase Scripts -->
+    <!-- Firebase Implementation -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -139,17 +212,16 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'thinkpro-v2-stable';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'thinkpro-enterprise-v2';
 
         // State
         let currentUser = null;
         let userData = null;
         let isAuthProcessing = false;
 
-        // UI Helpers
+        // UI & Utils
         const showToast = (msg, icon = 'fa-cloud-check', color = 'text-emerald-400') => {
             const toast = document.getElementById('toast');
-            if (!toast) return;
             document.getElementById('toast-msg').innerText = msg;
             document.getElementById('toast-icon').className = `fas ${icon} ${color}`;
             toast.classList.remove('opacity-0', 'translate-y-10');
@@ -161,16 +233,18 @@
         };
 
         const formatTime = (ts) => {
-            if (!ts) return "Just now";
+            if (!ts) return "Syncing...";
             const date = ts.toDate ? ts.toDate() : new Date(ts);
-            const diff = Math.floor((new Date() - date) / 1000);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
             if (diff < 60) return "Just now";
-            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-            return date.toLocaleDateString();
+            if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
         };
 
-        // Authentication Logic (Rule 3 Fix)
+        // Auth Logic
         const initAuth = async () => {
             if (isAuthProcessing) return;
             isAuthProcessing = true;
@@ -181,31 +255,27 @@
                     await signInAnonymously(auth);
                 }
             } catch (err) {
-                console.error("Auth error:", err);
-                showToast("Connection Error", "fa-triangle-exclamation", "text-rose-400");
+                console.error("Neural link error:", err);
+                showToast("Connection failed", "fa-triangle-exclamation", "text-rose-400");
                 isAuthProcessing = false;
-                const btn = document.getElementById('btn-auth');
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = 'Retry Connection';
-                }
+                document.getElementById('btn-auth').disabled = false;
+                document.getElementById('btn-auth').innerText = 'RETRY LINK';
             }
         };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                // FIX: Use an even number of segments for the document path
-                // /artifacts/{appId}/users/{userId}/profile/data (6 segments)
-                // OR /artifacts/{appId}/users/{userId} (4 segments) - let's use 6 segments for profile detail
                 const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'settings');
                 const userSnap = await getDoc(userRef);
                 
                 if (!userSnap.exists()) {
+                    const names = ["Aether", "Cipher", "Vortex", "Neon", "Proxy", "Zenith", "Static"];
+                    const randomName = names[Math.floor(Math.random() * names.length)] + "#" + user.uid.slice(0, 4);
                     const defaultData = {
                         uid: user.uid,
-                        name: "New Thinker",
-                        avatar: `https://ui-avatars.com/api/?name=User&background=6366f1&color=fff`,
+                        name: randomName,
+                        avatar: `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${user.uid}`,
                         joined: serverTimestamp()
                     };
                     await setDoc(userRef, defaultData);
@@ -223,30 +293,19 @@
             }
         });
 
-        // Real-time Listeners (Rule 1 & 2)
+        // Real-time Mesh Logic
         const setupRealtimeSync = () => {
             if (!currentUser) return;
 
-            // Global Feed Sync
+            // Global Feed
             const postsCol = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
             onSnapshot(postsCol, (snapshot) => {
-                const posts = [];
-                snapshot.forEach(doc => {
-                    posts.push({ id: doc.id, ...doc.data() });
-                });
-                // Sort in-memory to avoid index requirement (Rule 2)
-                const sortedPosts = posts.sort((a, b) => {
-                    const timeA = a.timestamp?.seconds || 0;
-                    const timeB = b.timestamp?.seconds || 0;
-                    return timeB - timeA;
-                });
-                renderFeed(sortedPosts);
-            }, (err) => {
-                console.error("Feed error:", err);
-                showToast("Feed Sync Failed", "fa-wifi-slash", "text-rose-400");
-            });
+                const posts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                const sorted = posts.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                renderFeed(sorted);
+            }, (err) => showToast("Sync lag detected", "fa-wifi-slash", "text-amber-400"));
 
-            // Local Profile Sync
+            // Profile Listener
             const profileDoc = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'settings');
             onSnapshot(profileDoc, (doc) => {
                 if (doc.exists()) {
@@ -255,18 +314,18 @@
                     document.getElementById('nav-user-avatar').src = userData.avatar;
                     document.getElementById('composer-avatar').src = userData.avatar;
                 }
-            }, (err) => console.error("Profile sync error:", err));
+            });
         };
 
         const renderFeed = (posts) => {
             const container = document.getElementById('feed-container');
             if (posts.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-20 px-8 space-y-4 animate-fade-in">
-                        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-300">
-                            <i class="fas fa-feather text-2xl"></i>
+                    <div class="text-center py-24 space-y-4 animate-slide-up">
+                        <div class="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-[2.5rem] flex items-center justify-center mx-auto text-slate-300">
+                            <i class="fas fa-satellite-dish text-3xl"></i>
                         </div>
-                        <p class="text-slate-400 font-medium">The mesh is empty. Start a conversation.</p>
+                        <h3 class="font-bold text-slate-400 uppercase tracking-widest text-xs">Waiting for signals...</h3>
                     </div>
                 `;
                 return;
@@ -277,30 +336,49 @@
                 const isOwner = post.authorId === currentUser.uid;
                 
                 return `
-                <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm animate-fade-in">
-                    <div class="flex items-start justify-between mb-3">
+                <div class="card bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm animate-slide-up">
+                    <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center space-x-3">
-                            <img src="${post.authorAvatar}" class="w-10 h-10 rounded-xl object-cover shadow-sm">
+                            <div class="relative">
+                                <img src="${post.authorAvatar}" class="w-11 h-11 rounded-2xl object-cover shadow-sm bg-slate-100">
+                                <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
+                            </div>
                             <div>
-                                <p class="font-bold text-slate-900 text-sm">${post.authorName}</p>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">${formatTime(post.timestamp)}</p>
+                                <p class="font-black text-slate-900 dark:text-white text-[15px]">${post.authorName}</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${formatTime(post.timestamp)}</p>
                             </div>
                         </div>
-                        ${isOwner ? `
-                            <button onclick="deletePost('${post.id}')" class="text-slate-300 hover:text-rose-500 transition-colors p-2">
-                                <i class="fas fa-trash-alt text-xs"></i>
-                            </button>
-                        ` : ''}
+                        <div class="flex items-center space-x-1">
+                            ${isOwner ? `
+                                <button onclick="deletePost('${post.id}')" class="text-slate-300 hover:text-rose-500 transition-colors p-2">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            ` : ''}
+                            <button class="text-slate-300 hover:text-indigo-500 p-2"><i class="fas fa-ellipsis-h text-xs"></i></button>
+                        </div>
                     </div>
-                    <p class="text-slate-700 leading-relaxed mb-4 text-[15px] whitespace-pre-wrap">${post.content}</p>
-                    <div class="flex items-center space-x-5 pt-3 border-t border-slate-50">
-                        <button onclick="toggleLike('${post.id}', ${isLiked})" class="flex items-center space-x-1.5 transition-all group ${isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-400'}">
-                            <i class="${isLiked ? 'fas' : 'far'} fa-heart transition-transform group-active:scale-125"></i>
-                            <span class="text-xs font-black">${post.likes?.length || 0}</span>
-                        </button>
-                        <button class="flex items-center space-x-1.5 text-slate-400 hover:text-indigo-500 transition-all">
-                            <i class="far fa-comment"></i>
-                            <span class="text-xs font-black">0</span>
+                    
+                    <p class="text-slate-700 dark:text-slate-300 leading-relaxed mb-5 text-[16px] font-medium whitespace-pre-wrap">${post.content}</p>
+                    
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+                        <div class="flex items-center space-x-6">
+                            <button onclick="toggleLike('${post.id}', ${isLiked})" class="flex items-center space-x-2 transition-all group ${isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-400'}">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${isLiked ? 'bg-rose-50 dark:bg-rose-900/10' : 'group-hover:bg-slate-50 dark:group-hover:bg-slate-800'}">
+                                    <i class="${isLiked ? 'fas' : 'far'} fa-heart transition-transform group-active:scale-125"></i>
+                                </div>
+                                <span class="text-xs font-black">${post.likes?.length || 0}</span>
+                            </button>
+                            
+                            <button class="flex items-center space-x-2 text-slate-400 hover:text-indigo-500 transition-all group">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center group-hover:bg-slate-50 dark:group-hover:bg-slate-800">
+                                    <i class="far fa-comment-dots"></i>
+                                </div>
+                                <span class="text-xs font-black">0</span>
+                            </button>
+                        </div>
+                        
+                        <button onclick="sharePost('${post.id}')" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            <i class="fas fa-share-nodes text-sm"></i>
                         </button>
                     </div>
                 </div>
@@ -308,11 +386,11 @@
             }).join('');
         };
 
-        // Actions
+        // Component Actions
         window.handleAuth = () => {
             const btn = document.getElementById('btn-auth');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Initializing...';
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> SYNCING...';
             initAuth();
         };
 
@@ -323,68 +401,77 @@
 
             const btn = document.getElementById('btn-post');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
             
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), {
                     content,
                     authorId: currentUser.uid,
-                    authorName: userData.name || "Anonymous",
+                    authorName: userData.name,
                     authorAvatar: userData.avatar,
                     likes: [],
                     timestamp: serverTimestamp()
                 });
 
                 input.value = '';
-                showToast("Post propagated to mesh");
+                showToast("Broadcast successful");
             } catch (err) {
-                showToast("Cloud propagation failed", "fa-circle-xmark", "text-rose-400");
+                showToast("Transmission failure", "fa-circle-xmark", "text-rose-400");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = 'Post Cloud';
+                btn.innerHTML = '<i class="fas fa-paper-plane text-sm mr-2"></i> Broadcast';
             }
         };
 
         window.toggleLike = async (postId, isLiked) => {
-            if (!currentUser) return;
             const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId);
             try {
                 await updateDoc(postRef, {
                     likes: isLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
                 });
-            } catch (err) {
-                showToast("Sync Error", "fa-heart-crack", "text-rose-400");
-            }
+            } catch (err) { console.error("Like sync error"); }
         };
 
         window.deletePost = async (postId) => {
-            if (!confirm("Remove this thought from the mesh?")) return;
+            if (!confirm("Remove this signal?")) return;
             try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId));
-                showToast("Removed from cloud");
-            } catch (err) {
-                showToast("Deletion failed");
-            }
+                showToast("Signal cleared");
+            } catch (err) { showToast("Removal failed"); }
         };
 
         window.updateProfile = async () => {
-            const newName = prompt("Enter your new display alias:", userData.name);
-            if (!newName || newName === userData.name) return;
+            const currentName = userData.name;
+            const newName = prompt("Choose a new Neural Alias:", currentName);
+            if (!newName || newName === currentName) return;
 
             try {
                 const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'settings');
                 await updateDoc(userRef, { 
                     name: newName,
-                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newName)}&background=6366f1&color=fff`
+                    avatar: `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${encodeURIComponent(newName)}`
                 });
-                showToast("Identity updated");
-            } catch (err) {
-                showToast("Profile update failed");
-            }
+                showToast("Identity synced");
+            } catch (err) { showToast("Profile sync failed"); }
+        };
+
+        window.sharePost = (id) => {
+            // Simple simulation of sharing
+            showToast("Signal link copied", "fa-link", "text-indigo-400");
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = `thinkpro://post/${id}`;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+        };
+
+        window.simulateImageUpload = () => {
+            showToast("Image link simulation", "fa-image", "text-sky-400");
         };
 
         window.logout = async () => {
-            if (!confirm("Disconnect from the mesh?")) return;
+            if (!confirm("Sever neural link?")) return;
             await signOut(auth);
             location.reload();
         };
