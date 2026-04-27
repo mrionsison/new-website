@@ -3,516 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>thinkpro | decentralized</title>
+    <title>thinkpro | cloud-sync</title>
     
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
-        :root {
-            --brand: #6366f1;
-            --brand-light: #818cf8;
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f1f5f9;
-            color: #1e293b;
-            overflow-x: hidden;
+        .glass { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
         }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(8px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-        .bento-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .bento-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-        }
-
+        .btn-active { transform: scale(0.95); }
+        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .animate-post { animation: slideUp 0.4s ease-out forwards; }
-
-        .auth-input {
-            @apply w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white/50 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none;
-        }
-
-        .nav-link-active {
-            @apply bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100/50;
-        }
     </style>
 </head>
-<body class="selection:bg-indigo-100">
+<body class="text-slate-900 selection:bg-indigo-100">
 
-    <!-- Global Toast -->
-    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] opacity-0 pointer-events-none transition-all duration-300">
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] opacity-0 translate-y-10 transition-all duration-500 pointer-events-none">
         <div class="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-3">
-            <i class="fas fa-circle-check text-emerald-400"></i>
-            <span id="toast-msg" class="text-sm font-medium">Synced successfully</span>
+            <i id="toast-icon" class="fas fa-cloud-check text-emerald-400"></i>
+            <span id="toast-msg" class="text-sm font-bold"></span>
         </div>
     </div>
 
-    <!-- Auth Overlay -->
-    <section id="auth-screen" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center p-4">
-        <div class="w-full max-w-md space-y-8 animate-post">
-            <div class="text-center">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 text-white rounded-3xl rotate-12 shadow-xl mb-6">
-                    <i class="fas fa-brain text-3xl -rotate-12"></i>
-                </div>
-                <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 text-center">thinkpro</h1>
-                <p class="text-slate-500 mt-2 text-balance">The decentralized social layer for thinkers.</p>
+    <!-- Auth Screen -->
+    <section id="screen-auth" class="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+        <div class="w-full max-w-sm text-center space-y-8 animate-fade-in">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-indigo-600 text-white rounded-[2.2rem] rotate-12 shadow-2xl mb-4">
+                <i class="fas fa-brain text-4xl -rotate-12"></i>
             </div>
-
-            <div id="auth-box" class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100">
-                <!-- Login View -->
-                <div id="login-view">
-                    <div class="space-y-4">
-                        <input type="text" id="l-user" placeholder="Alias (Username)" class="auth-input">
-                        <input type="password" id="l-pass" placeholder="Passphrase" class="auth-input">
-                        <button id="login-btn" onclick="App.auth.login()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center space-x-2">
-                            <span>Enter Space</span>
-                            <i class="fas fa-arrow-right text-xs"></i>
-                        </button>
-                    </div>
-                    <p class="text-center mt-6 text-sm text-slate-500">
-                        New here? <button onclick="App.ui.toggleAuth()" class="text-indigo-600 font-bold hover:underline">Create identity</button>
-                    </p>
-                </div>
-
-                <!-- Signup View -->
-                <div id="signup-view" class="hidden">
-                    <div class="space-y-4">
-                        <input type="text" id="s-name" placeholder="Display Name" class="auth-input">
-                        <input type="text" id="s-user" placeholder="Unique Alias" class="auth-input">
-                        <input type="password" id="s-pass" placeholder="Secret Passphrase" class="auth-input">
-                        <button id="signup-btn" onclick="App.auth.signup()" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition-all">
-                            Generate Keys & Join
-                        </button>
-                    </div>
-                    <p class="text-center mt-6 text-sm text-slate-500">
-                        Already have keys? <button onclick="App.ui.toggleAuth()" class="text-indigo-600 font-bold hover:underline">Login</button>
-                    </p>
-                </div>
+            <div>
+                <h1 class="text-5xl font-extrabold tracking-tight">thinkpro</h1>
+                <p class="text-slate-400 mt-3 font-medium">Decentralized cloud-sync social mesh.</p>
             </div>
-            
-            <div class="text-center space-y-4">
-                <button onclick="App.auth.guestMode()" class="text-slate-400 text-xs font-bold uppercase tracking-widest hover:text-indigo-600 transition-colors">Continue as Guest</button>
-                <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold block">Protected by End-to-End SEA Encryption</p>
+            <div class="space-y-4">
+                <button id="btn-auth" onclick="handleAuth()" class="w-full bg-slate-900 text-white font-bold py-5 rounded-[1.8rem] hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 flex items-center justify-center">
+                    <span>Enter Global Mesh</span>
+                </button>
+            </div>
+            <div class="flex items-center justify-center space-x-2 text-[10px] uppercase tracking-widest text-slate-400 font-bold">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>System Ready</span>
             </div>
         </div>
     </section>
 
-    <!-- Main App Layout -->
-    <main id="app-content" class="hidden min-h-screen pb-24 lg:pb-0 lg:pl-64">
-        
-        <!-- Sidebar Navigation (Desktop) -->
-        <nav class="hidden lg:flex fixed left-0 top-0 bottom-0 w-64 glass flex-col p-6 space-y-8 z-40">
-            <div class="flex items-center space-x-3 px-2">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                    <i class="fas fa-brain"></i>
+    <!-- Main Screen -->
+    <section id="screen-main" class="hidden min-h-screen pb-24">
+        <!-- Header -->
+        <header class="sticky top-0 z-40 glass border-b border-slate-100/50">
+            <div class="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-sm shadow-lg shadow-indigo-100">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <span class="font-extrabold text-xl tracking-tight hidden xs:block">thinkpro</span>
                 </div>
-                <span class="text-xl font-extrabold tracking-tighter">thinkpro</span>
-            </div>
-
-            <div class="flex-1 space-y-2">
-                <button onclick="App.router.go('feed')" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-bold transition-all nav-link-active" id="nav-feed">
-                    <i class="fas fa-house-chimney w-5"></i><span>Feed</span>
-                </button>
-                <button onclick="App.router.go('explore')" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium text-slate-500 hover:bg-slate-100 transition-all" id="nav-explore">
-                    <i class="fas fa-compass w-5"></i><span>Explore</span>
-                </button>
-                <button onclick="App.router.go('notifications')" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium text-slate-500 hover:bg-slate-100 transition-all" id="nav-notifications">
-                    <i class="fas fa-bell w-5"></i><span>Alerts</span>
-                </button>
-                <button onclick="App.router.go('profile')" class="nav-link w-full flex items-center space-x-3 px-4 py-3 rounded-2xl font-medium text-slate-500 hover:bg-slate-100 transition-all" id="nav-profile">
-                    <i class="fas fa-user w-5"></i><span>Profile</span>
-                </button>
-            </div>
-
-            <div class="p-4 bg-slate-900 rounded-[2rem] text-white space-y-4">
                 <div class="flex items-center space-x-3">
-                    <img id="my-avatar-mini" src="https://ui-avatars.com/api/?name=Guest" class="w-10 h-10 rounded-full bg-slate-700 object-cover">
-                    <div class="overflow-hidden">
-                        <p id="my-name-mini" class="font-bold truncate text-sm">Guest</p>
-                        <p id="connection-status" class="text-[10px] text-slate-400 font-mono truncate uppercase">P2P Active</p>
-                    </div>
+                    <button onclick="updateProfile()" class="flex items-center space-x-2 group pl-1 pr-3 py-1 bg-slate-50 rounded-full border border-slate-100 hover:border-indigo-200 transition-all">
+                        <img id="nav-user-avatar" src="https://ui-avatars.com/api/?name=User" class="w-7 h-7 rounded-full object-cover">
+                        <span id="nav-user-name" class="text-xs font-bold text-slate-700 max-w-[80px] truncate">Thinker</span>
+                    </button>
+                    <button onclick="logout()" class="text-slate-400 hover:text-rose-500 transition-colors w-9 h-9 flex items-center justify-center rounded-full hover:bg-rose-50">
+                        <i class="fas fa-power-off text-sm"></i>
+                    </button>
                 </div>
-                <button onclick="App.auth.logout()" class="w-full py-2 text-xs font-bold text-slate-400 hover:text-white transition-colors">Disconnect</button>
             </div>
+        </header>
+
+        <!-- Content -->
+        <main class="max-w-2xl mx-auto px-4 py-8 space-y-6">
+            <!-- Composer -->
+            <div class="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+                <div class="flex space-x-4">
+                    <img id="composer-avatar" src="https://ui-avatars.com/api/?name=User" class="w-11 h-11 rounded-[1.1rem] bg-slate-100 object-cover shadow-sm">
+                    <textarea id="post-input" placeholder="What's on your mind?" class="flex-1 bg-transparent border-none focus:ring-0 text-lg font-medium placeholder:text-slate-300 resize-none h-20 pt-2 no-scrollbar" maxlength="280"></textarea>
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t border-slate-50">
+                    <div class="flex space-x-1 text-slate-400">
+                        <button class="w-10 h-10 hover:bg-slate-50 rounded-xl transition-all flex items-center justify-center"><i class="far fa-image"></i></button>
+                        <button class="w-10 h-10 hover:bg-slate-50 rounded-xl transition-all flex items-center justify-center"><i class="far fa-smile"></i></button>
+                    </div>
+                    <button id="btn-post" onclick="submitPost()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold hover:bg-indigo-600 transition-all shadow-lg shadow-slate-100 disabled:opacity-50">
+                        Post Cloud
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feed Container -->
+            <div id="feed-container" class="space-y-4">
+                <!-- Posts will be injected here -->
+                <div id="feed-loading" class="flex flex-col items-center justify-center py-20 space-y-4">
+                    <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Waking up the cloud...</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation (Mobile) -->
+        <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm glass rounded-[2rem] h-16 flex items-center justify-around px-4 shadow-2xl border border-white/50 z-50">
+            <button class="w-12 h-12 flex items-center justify-center text-indigo-600"><i class="fas fa-home text-xl"></i></button>
+            <button class="w-12 h-12 flex items-center justify-center text-slate-400"><i class="fas fa-search text-xl"></i></button>
+            <button class="w-12 h-12 flex items-center justify-center text-slate-400"><i class="fas fa-bell text-xl"></i></button>
+            <button onclick="updateProfile()" class="w-12 h-12 flex items-center justify-center text-slate-400"><i class="fas fa-user text-xl"></i></button>
         </nav>
+    </section>
 
-        <!-- Main Scroll Area -->
-        <div class="max-w-2xl mx-auto px-4 py-8">
-            
-            <!-- Feed Screen -->
-            <section id="screen-feed" class="space-y-6">
-                <!-- Composer Bento Box -->
-                <div id="composer-area" class="bento-card glass p-6 rounded-[2.5rem] shadow-sm border border-white/60">
-                    <div class="flex space-x-4">
-                        <img id="my-avatar-post" src="https://ui-avatars.com/api/?name=Guest" class="w-12 h-12 rounded-2xl bg-slate-200 object-cover">
-                        <div class="flex-1 space-y-4">
-                            <textarea id="post-input" placeholder="Share a thought with the mesh..." class="w-full bg-transparent border-none focus:ring-0 text-lg font-medium placeholder:text-slate-400 resize-none no-scrollbar h-24" maxlength="500"></textarea>
-                            
-                            <div id="img-preview-area" class="hidden relative group">
-                                <img id="post-img-preview" src="" class="rounded-3xl w-full object-cover max-h-80 shadow-lg">
-                                <button onclick="App.post.clearImage()" class="absolute top-4 right-4 bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white transition-all shadow-md">
-                                    <i class="fas fa-times text-slate-900"></i>
-                                </button>
-                            </div>
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot, query, addDoc, updateDoc, deleteDoc, serverTimestamp, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-                            <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-                                <div class="flex space-x-2">
-                                    <label class="cursor-pointer p-3 hover:bg-indigo-50 rounded-2xl text-indigo-600 transition-all">
-                                        <i class="far fa-image text-xl"></i>
-                                        <input type="file" id="post-file" class="hidden" accept="image/*" onchange="App.post.handleFile(this)">
-                                    </label>
-                                    <button class="p-3 hover:bg-emerald-50 rounded-2xl text-emerald-600 transition-all">
-                                        <i class="far fa-chart-bar text-xl"></i>
-                                    </button>
-                                </div>
-                                <button id="submit-post-btn" onclick="App.post.submit()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-all">
-                                    Sync
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        // Configuration
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'thinkpro-v2-stable';
 
-                <!-- Feed Posts Container -->
-                <div id="feed-container" class="space-y-6 pb-12">
-                    <div class="text-center py-20 text-slate-400 animate-pulse">
-                        <i class="fas fa-satellite-dish text-4xl mb-4"></i>
-                        <p class="font-bold uppercase tracking-widest text-xs">Propagating data from peers...</p>
-                    </div>
-                </div>
-            </section>
+        // State
+        let currentUser = null;
+        let userData = null;
+        let isAuthProcessing = false;
 
-            <!-- Profile Screen -->
-            <section id="screen-profile" class="hidden space-y-8 animate-post">
-                <div class="relative">
-                    <div class="h-48 rounded-[3rem] bg-gradient-to-br from-indigo-500 to-purple-600 shadow-inner"></div>
-                    <div class="absolute -bottom-12 left-8 p-1.5 bg-white rounded-[2.5rem] shadow-xl">
-                        <img id="profile-pic" src="https://ui-avatars.com/api/?name=Guest" class="w-32 h-32 rounded-[2rem] bg-slate-100 object-cover">
-                    </div>
-                </div>
-                <div class="pt-14 px-8 flex justify-between items-start">
-                    <div>
-                        <h2 id="profile-name" class="text-3xl font-black text-slate-900">Loading...</h2>
-                        <p id="profile-handle" class="text-indigo-600 font-bold">@alias</p>
-                    </div>
-                    <button class="px-6 py-3 border-2 border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-100 transition-all">Update Alias</button>
-                </div>
-                <div class="px-8 flex space-x-6">
-                    <div><span id="profile-post-count" class="font-black text-slate-900">0</span> <span class="text-slate-500 text-sm">Posts</span></div>
-                    <div><span class="font-black text-slate-900">0</span> <span class="text-slate-500 text-sm">Nodes</span></div>
-                </div>
-                <div id="profile-posts" class="space-y-6 pt-4"></div>
-            </section>
+        // UI Helpers
+        const showToast = (msg, icon = 'fa-cloud-check', color = 'text-emerald-400') => {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            document.getElementById('toast-msg').innerText = msg;
+            document.getElementById('toast-icon').className = `fas ${icon} ${color}`;
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-10');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 3000);
+        };
 
-            <!-- Notification Screen -->
-            <section id="screen-notifications" class="hidden space-y-6 animate-post">
-                <h2 class="text-2xl font-extrabold px-2">Alerts</h2>
-                <div class="bento-card glass p-8 rounded-[2.5rem] text-center text-slate-400">
-                    <i class="fas fa-bell-slash text-4xl mb-4 opacity-20"></i>
-                    <p class="font-bold">Privacy is quiet. No new alerts.</p>
-                </div>
-            </section>
+        const formatTime = (ts) => {
+            if (!ts) return "Just now";
+            const date = ts.toDate ? ts.toDate() : new Date(ts);
+            const diff = Math.floor((new Date() - date) / 1000);
+            if (diff < 60) return "Just now";
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return date.toLocaleDateString();
+        };
 
-             <!-- Explore Screen -->
-             <section id="screen-explore" class="hidden space-y-6 animate-post">
-                <h2 class="text-2xl font-extrabold px-2">Mesh Network</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bento-card glass p-6 rounded-[2.5rem] bg-indigo-50/50">
-                        <h3 class="font-bold text-indigo-600 mb-1">#decentralized</h3>
-                        <p class="text-xs text-slate-500">Active peer-stream</p>
-                    </div>
-                    <div class="bento-card glass p-6 rounded-[2.5rem] bg-emerald-50/50">
-                        <h3 class="font-bold text-emerald-600 mb-1">#sea-protocol</h3>
-                        <p class="text-xs text-slate-500">Secure encryption</p>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-
-        <!-- Mobile Nav -->
-        <nav class="lg:hidden fixed bottom-0 left-0 right-0 glass h-20 flex items-center justify-around px-6 z-40 rounded-t-[2.5rem] border-t border-white/50 shadow-2xl">
-            <button onclick="App.router.go('feed')" class="mobile-nav-link text-slate-400 p-3" id="m-nav-feed"><i class="fas fa-home text-2xl"></i></button>
-            <button onclick="App.router.go('explore')" class="mobile-nav-link text-slate-400 p-3" id="m-nav-explore"><i class="fas fa-search text-2xl"></i></button>
-            <button onclick="App.router.go('notifications')" class="mobile-nav-link text-slate-400 p-3 relative" id="m-nav-notifications">
-                <i class="fas fa-bell text-2xl"></i>
-            </button>
-            <button onclick="App.router.go('profile')" class="mobile-nav-link text-slate-400 p-3" id="m-nav-profile"><i class="fas fa-user text-2xl"></i></button>
-        </nav>
-    </main>
-
-    <script>
-        const App = (() => {
-            // Setup Gun Instance
-            const gun = Gun([
-                'https://gun-manhattan.herokuapp.com/gun',
-                'https://gun-us.herokuapp.com/gun'
-            ]);
-            const user = gun.user().recall({storage: true});
-            
-            const state = {
-                currentScreen: 'feed',
-                currentImgData: null,
-                posts: new Map(),
-                myProfile: null,
-                isGuest: false
-            };
-
-            const ui = {
-                showToast: (msg) => {
-                    const t = document.getElementById('toast');
-                    document.getElementById('toast-msg').innerText = msg;
-                    t.style.opacity = '1';
-                    t.classList.remove('pointer-events-none');
-                    setTimeout(() => {
-                        t.style.opacity = '0';
-                        t.classList.add('pointer-events-none');
-                    }, 3000);
-                },
-                toggleAuth: () => {
-                    document.getElementById('login-view').classList.toggle('hidden');
-                    document.getElementById('signup-view').classList.toggle('hidden');
-                },
-                enterApp: () => {
-                    document.getElementById('auth-screen').classList.add('hidden');
-                    document.getElementById('app-content').classList.remove('hidden');
-                    
-                    if (state.isGuest) {
-                        const comp = document.getElementById('composer-area');
-                        if (comp) {
-                            comp.style.opacity = '0.5';
-                            comp.style.pointerEvents = 'none';
-                        }
-                        document.getElementById('connection-status').innerText = 'Public Node';
-                    }
-
-                    // Start Listening for Global Posts
-                    gun.get('tp_global_feed_v2').map().on((data, id) => {
-                        if (data && data.content) ui.renderPost(data, id);
-                    });
-                },
-                renderPost: (post, id) => {
-                    if (state.posts.has(id)) return;
-                    state.posts.set(id, post);
-
-                    const container = document.getElementById('feed-container');
-                    const pulse = container.querySelector('.animate-pulse');
-                    if (pulse) container.innerHTML = '';
-
-                    const card = document.createElement('div');
-                    card.className = 'bento-card bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 animate-post';
-                    
-                    const timeStr = post.time ? new Date(post.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently';
-                    const avatar = post.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author || 'U')}&background=random`;
-
-                    card.innerHTML = `
-                        <div class="flex items-center space-x-3 mb-4">
-                            <img src="${avatar}" class="w-10 h-10 rounded-full border border-slate-50 object-cover">
-                            <div>
-                                <p class="font-black text-slate-900 text-sm">${post.author || 'Thinker'}</p>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase">${timeStr}</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-700 leading-relaxed font-medium mb-4 whitespace-pre-wrap">${post.content || ''}</p>
-                        ${post.image ? `<img src="${post.image}" class="rounded-3xl w-full mb-4 shadow-sm object-cover max-h-96">` : ''}
-                        <div class="flex items-center space-x-6 pt-4 border-t border-slate-50">
-                            <button class="flex items-center space-x-2 text-slate-400 hover:text-rose-500 transition-colors">
-                                <i class="far fa-heart"></i>
-                                <span class="text-xs font-bold">0</span>
-                            </button>
-                            <button class="flex items-center space-x-2 text-slate-400 hover:text-indigo-500 transition-colors">
-                                <i class="far fa-comment"></i>
-                                <span class="text-xs font-bold">0</span>
-                            </button>
-                        </div>
-                    `;
-                    container.prepend(card);
+        // Authentication Logic (Rule 3 Fix)
+        const initAuth = async () => {
+            if (isAuthProcessing) return;
+            isAuthProcessing = true;
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
                 }
-            };
-
-            const auth = {
-                guestMode: () => {
-                    state.isGuest = true;
-                    ui.enterApp();
-                },
-                signup: () => {
-                    const u = document.getElementById('s-user').value.trim();
-                    const p = document.getElementById('s-pass').value.trim();
-                    const n = document.getElementById('s-name').value.trim();
-                    const btn = document.getElementById('signup-btn');
-                    
-                    if (!u || !p || !n) return ui.showToast("Missing fields");
-                    
-                    btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating Keys...';
-
-                    user.create(u, p, (ack) => {
-                        if (ack.err) {
-                            btn.disabled = false;
-                            btn.innerText = 'Generate Keys & Join';
-                            return ui.showToast(ack.err);
-                        }
-                        // Automate login after signup
-                        auth.login(u, p, n);
-                    });
-                },
-                login: (u, p, n) => {
-                    const userVal = u || document.getElementById('l-user').value.trim();
-                    const passVal = p || document.getElementById('l-pass').value.trim();
-                    const btn = document.getElementById('login-btn');
-
-                    if (!userVal || !passVal) return ui.showToast("Alias and Passphrase required");
-
-                    btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Decrypting...';
-
-                    user.auth(userVal, passVal, (ack) => {
-                        if (ack.err) {
-                            btn.disabled = false;
-                            btn.innerText = 'Enter Space';
-                            return ui.showToast(ack.err);
-                        }
-                        
-                        // Set profile data if signing up
-                        if (n) {
-                            user.get('profile').put({ 
-                                name: n, 
-                                alias: userVal,
-                                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=6366f1&color=fff`
-                            });
-                        }
-                        
-                        ui.showToast("Welcome back");
-                        ui.enterApp();
-                        auth.fetchProfile();
-                    });
-                },
-                fetchProfile: () => {
-                    user.get('profile').once((profile) => {
-                        if (profile) {
-                            state.myProfile = profile;
-                            document.getElementById('my-name-mini').innerText = profile.name;
-                            document.getElementById('my-avatar-mini').src = profile.avatar;
-                            document.getElementById('my-avatar-post').src = profile.avatar;
-                        }
-                    });
-                },
-                logout: () => {
-                    user.leave();
-                    sessionStorage.clear();
-                    location.reload();
+            } catch (err) {
+                console.error("Auth error:", err);
+                showToast("Connection Error", "fa-triangle-exclamation", "text-rose-400");
+                isAuthProcessing = false;
+                const btn = document.getElementById('btn-auth');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Retry Connection';
                 }
-            };
+            }
+        };
 
-            const post = {
-                handleFile: (input) => {
-                    const file = input.files[0];
-                    if (file && file.size > 500000) return ui.showToast("File too large (Max 500KB)");
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        state.currentImgData = e.target.result;
-                        document.getElementById('img-preview-area').classList.remove('hidden');
-                        document.getElementById('post-img-preview').src = e.target.result;
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                // FIX: Use an even number of segments for the document path
+                // /artifacts/{appId}/users/{userId}/profile/data (6 segments)
+                // OR /artifacts/{appId}/users/{userId} (4 segments) - let's use 6 segments for profile detail
+                const userRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'settings');
+                const userSnap = await getDoc(userRef);
+                
+                if (!userSnap.exists()) {
+                    const defaultData = {
+                        uid: user.uid,
+                        name: "New Thinker",
+                        avatar: `https://ui-avatars.com/api/?name=User&background=6366f1&color=fff`,
+                        joined: serverTimestamp()
                     };
-                    if (file) reader.readAsDataURL(file);
-                },
-                clearImage: () => {
-                    state.currentImgData = null;
-                    document.getElementById('img-preview-area').classList.add('hidden');
-                    document.getElementById('post-file').value = '';
-                },
-                submit: async () => {
-                    if (state.isGuest) return ui.showToast("Login to post");
-                    const input = document.getElementById('post-input');
-                    const content = input.value.trim();
-                    const btn = document.getElementById('submit-post-btn');
-
-                    if (!content && !state.currentImgData) return;
-
-                    btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-satellite fa-spin"></i>';
-
-                    try {
-                        const profile = await user.get('profile').then();
-                        const data = {
-                            author: profile.name || 'Anonymous',
-                            content: content,
-                            image: state.currentImgData,
-                            time: Date.now(),
-                            avatar: profile.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}`
-                        };
-
-                        const postID = 'post_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-                        gun.get('tp_global_feed_v2').get(postID).put(data);
-                        
-                        input.value = '';
-                        post.clearImage();
-                        ui.showToast("Post propagated");
-                    } catch (e) {
-                        ui.showToast("Sync Error");
-                    } finally {
-                        btn.disabled = false;
-                        btn.innerText = 'Sync';
-                    }
+                    await setDoc(userRef, defaultData);
+                    userData = defaultData;
+                } else {
+                    userData = userSnap.data();
                 }
-            };
+                
+                setupRealtimeSync();
+                document.getElementById('screen-auth').classList.add('hidden');
+                document.getElementById('screen-main').classList.remove('hidden');
+            } else {
+                document.getElementById('screen-auth').classList.remove('hidden');
+                document.getElementById('screen-main').classList.add('hidden');
+            }
+        });
 
-            const router = {
-                go: (screen) => {
-                    state.currentScreen = screen;
-                    document.querySelectorAll('section[id^="screen-"]').forEach(s => s.classList.add('hidden'));
-                    document.getElementById(`screen-${screen}`).classList.remove('hidden');
-                    
-                    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('nav-link-active'));
-                    const nav = document.getElementById(`nav-${screen}`);
-                    if (nav) nav.classList.add('nav-link-active');
+        // Real-time Listeners (Rule 1 & 2)
+        const setupRealtimeSync = () => {
+            if (!currentUser) return;
 
-                    if (screen === 'profile') {
-                        if (state.myProfile) {
-                            document.getElementById('profile-name').innerText = state.myProfile.name;
-                            document.getElementById('profile-handle').innerText = '@' + state.myProfile.alias;
-                            document.getElementById('profile-pic').src = state.myProfile.avatar;
-                        } else if (state.isGuest) {
-                            document.getElementById('profile-name').innerText = "Guest Traveler";
-                            document.getElementById('profile-handle').innerText = "@guest";
-                        }
-                    }
+            // Global Feed Sync
+            const postsCol = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
+            onSnapshot(postsCol, (snapshot) => {
+                const posts = [];
+                snapshot.forEach(doc => {
+                    posts.push({ id: doc.id, ...doc.data() });
+                });
+                // Sort in-memory to avoid index requirement (Rule 2)
+                const sortedPosts = posts.sort((a, b) => {
+                    const timeA = a.timestamp?.seconds || 0;
+                    const timeB = b.timestamp?.seconds || 0;
+                    return timeB - timeA;
+                });
+                renderFeed(sortedPosts);
+            }, (err) => {
+                console.error("Feed error:", err);
+                showToast("Feed Sync Failed", "fa-wifi-slash", "text-rose-400");
+            });
+
+            // Local Profile Sync
+            const profileDoc = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'settings');
+            onSnapshot(profileDoc, (doc) => {
+                if (doc.exists()) {
+                    userData = doc.data();
+                    document.getElementById('nav-user-name').innerText = userData.name;
+                    document.getElementById('nav-user-avatar').src = userData.avatar;
+                    document.getElementById('composer-avatar').src = userData.avatar;
                 }
-            };
+            }, (err) => console.error("Profile sync error:", err));
+        };
 
-            const init = () => {
-                // If Gun already recalled a user
-                if (user.is) {
-                    auth.fetchProfile();
-                    ui.enterApp();
-                }
-            };
+        const renderFeed = (posts) => {
+            const container = document.getElementById('feed-container');
+            if (posts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-20 px-8 space-y-4 animate-fade-in">
+                        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                            <i class="fas fa-feather text-2xl"></i>
+                        </div>
+                        <p class="text-slate-400 font-medium">The mesh is empty. Start a conversation.</p>
+                    </div>
+                `;
+                return;
+            }
 
-            return { auth, ui, post, router, init };
-        })();
+            container.innerHTML = posts.map(post => {
+                const isLiked = post.likes?.includes(currentUser.uid);
+                const isOwner = post.authorId === currentUser.uid;
+                
+                return `
+                <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm animate-fade-in">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <img src="${post.authorAvatar}" class="w-10 h-10 rounded-xl object-cover shadow-sm">
+                            <div>
+                                <p class="font-bold text-slate-900 text-sm">${post.authorName}</p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">${formatTime(post.timestamp)}</p>
+                            </div>
+                        </div>
+                        ${isOwner ? `
+                            <button onclick="deletePost('${post.id}')" class="text-slate-300 hover:text-rose-500 transition-colors p-2">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <p class="text-slate-700 leading-relaxed mb-4 text-[15px] whitespace-pre-wrap">${post.content}</p>
+                    <div class="flex items-center space-x-5 pt-3 border-t border-slate-50">
+                        <button onclick="toggleLike('${post.id}', ${isLiked})" class="flex items-center space-x-1.5 transition-all group ${isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-400'}">
+                            <i class="${isLiked ? 'fas' : 'far'} fa-heart transition-transform group-active:scale-125"></i>
+                            <span class="text-xs font-black">${post.likes?.length || 0}</span>
+                        </button>
+                        <button class="flex items-center space-x-1.5 text-slate-400 hover:text-indigo-500 transition-all">
+                            <i class="far fa-comment"></i>
+                            <span class="text-xs font-black">0</span>
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        };
 
-        window.onload = App.init;
+        // Actions
+        window.handleAuth = () => {
+            const btn = document.getElementById('btn-auth');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Initializing...';
+            initAuth();
+        };
+
+        window.submitPost = async () => {
+            const input = document.getElementById('post-input');
+            const content = input.value.trim();
+            if (!content || !currentUser) return;
+
+            const btn = document.getElementById('btn-post');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), {
+                    content,
+                    authorId: currentUser.uid,
+                    authorName: userData.name || "Anonymous",
+                    authorAvatar: userData.avatar,
+                    likes: [],
+                    timestamp: serverTimestamp()
+                });
+
+                input.value = '';
+                showToast("Post propagated to mesh");
+            } catch (err) {
+                showToast("Cloud propagation failed", "fa-circle-xmark", "text-rose-400");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Post Cloud';
+            }
+        };
+
+        window.toggleLike = async (postId, isLiked) => {
+            if (!currentUser) return;
+            const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId);
+            try {
+                await updateDoc(postRef, {
+                    likes: isLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
+                });
+            } catch (err) {
+                showToast("Sync Error", "fa-heart-crack", "text-rose-400");
+            }
+        };
+
+        window.deletePost = async (postId) => {
+            if (!confirm("Remove this thought from the mesh?")) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId));
+                showToast("Removed from cloud");
+            } catch (err) {
+                showToast("Deletion failed");
+            }
+        };
+
+        window.updateProfile = async () => {
+            const newName = prompt("Enter your new display alias:", userData.name);
+            if (!newName || newName === userData.name) return;
+
+            try {
+                const userRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'settings');
+                await updateDoc(userRef, { 
+                    name: newName,
+                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newName)}&background=6366f1&color=fff`
+                });
+                showToast("Identity updated");
+            } catch (err) {
+                showToast("Profile update failed");
+            }
+        };
+
+        window.logout = async () => {
+            if (!confirm("Disconnect from the mesh?")) return;
+            await signOut(auth);
+            location.reload();
+        };
+
     </script>
 </body>
 </html>
