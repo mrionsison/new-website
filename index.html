@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Social Network</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="styles.css">
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1><i class="fa-solid fa-users"></i> My Social Network</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Setup Warning -->
+        <div id="setup-warning" class="warning-box hidden">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+                <strong>Setup Required:</strong> Please add your Supabase URL and Anon Key in <code>app.js</code>.<br>
+                <em>Note: Don't forget to add a <code>likes</code> (int8, default 0) column to your <code>posts</code> table!</em>
+            </div>
+        </div>
+
+        <!-- Post Creation Section -->
+        <section class="create-post-section card">
+            <div class="create-post-header">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <h2>Share Something</h2>
+            </div>
+            <form id="create-post-form">
+                <textarea id="post-content" placeholder="What's on your mind?" required></textarea>
+                <div class="form-actions">
+                    <button type="submit" id="submit-post"><i class="fa-solid fa-paper-plane"></i> Post</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Feed Section -->
+        <section class="feed-section">
+            <div id="posts-container">
+                <!-- Skeleton Loader initially -->
+                <div id="loading-container">
+                    <div class="skeleton card">
+                        <div class="skeleton-header">
+                            <div class="skeleton-avatar"></div>
+                            <div class="skeleton-text skeleton-title"></div>
+                        </div>
+                        <div class="skeleton-text skeleton-body"></div>
+                        <div class="skeleton-text skeleton-body" style="width: 60%"></div>
+                    </div>
+                    <div class="skeleton card">
+                        <div class="skeleton-header">
+                            <div class="skeleton-avatar"></div>
+                            <div class="skeleton-text skeleton-title"></div>
+                        </div>
+                        <div class="skeleton-text skeleton-body"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
